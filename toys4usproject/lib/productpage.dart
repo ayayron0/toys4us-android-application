@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'Product.dart';
+import 'checkout.dart';
 
 void main() {
   runApp(MaterialApp(home: ProductPage(product:
@@ -47,13 +48,19 @@ class _ProductPageState extends State<ProductPage> {
 
     return Scaffold(
         appBar: AppBar(
-          backgroundColor: Colors.white,
-          surfaceTintColor: Colors.transparent,
-          leading: Icon(Icons.arrow_back),
+          title: const Text("Products"),
           actions: [
-            Icon(Icons.shopping_cart_outlined),
-            SizedBox(width: 10),
-          ],),
+            IconButton(
+              icon: Icon(Icons.shopping_cart),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => CheckoutPage()),
+                );
+              },
+            )
+          ],
+        ),
 
         body: SingleChildScrollView(
 
@@ -135,7 +142,36 @@ class _ProductPageState extends State<ProductPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     ElevatedButton.icon(
-                      onPressed: () {},
+                    onPressed: () async {
+        final cart = FirebaseFirestore.instance.collection('cart_items');
+
+        // check if product already exists
+        final existing = await cart
+            .where('name', isEqualTo: product.name)
+            .get();
+
+        if (existing.docs.isNotEmpty) {
+        // increment quantity
+        final doc = existing.docs.first;
+        int currentQty = doc['quantity'];
+
+        await cart.doc(doc.id).update({
+        'quantity': currentQty + 1,
+        });
+        } else {
+        // add new item
+        await cart.add({
+        'name': product.name,
+        'price': product.price,
+        'image': product.image,
+        'quantity': 1,
+        });
+        }
+
+        ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Added to cart")),
+        );
+        },
                       icon: Icon(Icons.add_shopping_cart, color: Colors.white,),
                       label: Text("Add to Cart", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),
                       style: ElevatedButton.styleFrom(
