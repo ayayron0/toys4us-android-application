@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "537913184680",
+    "project_id": "buildaplushtoystore",
+    "storage_bucket": "buildaplushtoystore.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:537913184680:android:c4891f3509c36a28230d9d",
+        "android_client_info": {
+          "package_name": "com.example.appdevproject"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDTDUkJp4m_CLXaRSDt3wBlErKR5yMAq3g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
