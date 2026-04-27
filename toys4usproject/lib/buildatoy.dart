@@ -1,37 +1,6 @@
 import 'package:flutter/material.dart';
-
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  // This widget is the root of your application.
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: .fromSeed(seedColor: Colors.deepPurple),
-      ),
-      home: const BuildAToyPage(),
-    );
-  }
-}
-
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 
 class BuildAToyPage extends StatefulWidget {
@@ -63,16 +32,11 @@ class _BuildAToyPageState extends State<BuildAToyPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Build-A-Plush"),
-        centerTitle: true,
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
             const Text(
               "Preview",
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -226,11 +190,34 @@ class _BuildAToyPageState extends State<BuildAToyPage> {
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
-                onPressed: () {
+                onPressed: () async {
+                  final user = FirebaseAuth.instance.currentUser;
+
+                  if (user == null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Please log in first")),
+                    );
+                    return;
+                  }
+
+                  final cart = FirebaseFirestore.instance
+                      .collection('users')
+                      .doc(user.uid)
+                      .collection('cart_items');
+
+                  await cart.add({
+                    'name': 'Custom $plushType Plush',
+                    'price': 39.99,
+                    'image': 'assets/images/${plushType.toLowerCase()}.png',
+                    'quantity': 1,
+                    'type': plushType,
+                    'color': color,
+                    'accessory': accessory,
+                    'voiceMessage': voiceMessage,
+                  });
+
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text("Custom Plush Added to Cart!"),
-                    ),
+                    const SnackBar(content: Text("Custom Plush Added to Cart!")),
                   );
                 },
                 icon: const Icon(Icons.shopping_cart),
@@ -240,8 +227,7 @@ class _BuildAToyPageState extends State<BuildAToyPage> {
                 ),
               ),
             ),
-          ],
-        ),
+        ],
       ),
     );
   }

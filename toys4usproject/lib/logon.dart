@@ -1,21 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'firebase_options.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'mainproductnavigation.dart';
-import 'products.dart';
-import 'buildatoy.dart';
-import 'aboutus.dart';
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-  runApp(MyApp());
-}
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -68,7 +59,6 @@ class _LoginScreenState extends State<LoginScreen> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
 
-  final users = FirebaseFirestore.instance.collection('users');
 
   bool obscure = true;
 
@@ -81,30 +71,23 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
-    final snapshot = await users.get();
+    try {
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
 
-    bool found = false;
-
-    for (var doc in snapshot.docs) {
-      final data = doc.data() as Map<String, dynamic>;
-
-      if (data['email'] == email && data['password'] == password) {
-        found = true;
-        break;
-      }
-    }
-
-    if (found) {
       showSnack("Login successful");
 
       Navigator.pushReplacement(
         context,
-          MaterialPageRoute(builder: (_) => MainProductNavigation()),
+        MaterialPageRoute(builder: (_) => MainProductNavigation()),
       );
-    } else {
-      showSnack("Invalid credentials");
+    } on FirebaseAuthException catch (e) {
+      showSnack(e.message ?? "Invalid credentials");
     }
   }
+
 
   void showSnack(String msg) {
     ScaffoldMessenger.of(context)
@@ -205,7 +188,6 @@ class _SignupScreenState extends State<SignupScreen> {
   final passwordController = TextEditingController();
   final confirmController = TextEditingController();
 
-  final users = FirebaseFirestore.instance.collection('users');
 
   bool obscure = true;
 
@@ -224,27 +206,28 @@ class _SignupScreenState extends State<SignupScreen> {
       return;
     }
 
-    // check if email already exists (simple loop)
-    final snapshot = await users.get();
+    try {
+      final userCredential =
+      await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
 
-    for (var doc in snapshot.docs) {
-      final data = doc.data() as Map<String, dynamic>;
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userCredential.user!.uid)
+          .set({
+        'email': email,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
 
-      if (data['email'] == email) {
-        showSnack("Email already exists");
-        return;
-      }
+      showSnack("Account created");
+      Navigator.pop(context);
+    } on FirebaseAuthException catch (e) {
+      showSnack(e.message ?? "Could not create account");
     }
-
-    await users.add({
-      'email': email,
-      'password': password,
-    });
-
-    showSnack("Account created");
-
-    Navigator.pop(context);
   }
+
 
   void showSnack(String msg) {
     ScaffoldMessenger.of(context)
@@ -325,30 +308,23 @@ class ForgotScreen extends StatefulWidget {
 
 class _ForgotScreenState extends State<ForgotScreen> {
   final emailController = TextEditingController();
-  final users = FirebaseFirestore.instance.collection('users');
 
   void checkEmail() async {
     final email = emailController.text.trim();
 
-    final snapshot = await users.get();
-
-    bool found = false;
-
-    for (var doc in snapshot.docs) {
-      final data = doc.data() as Map<String, dynamic>;
-
-      if (data['email'] == email) {
-        found = true;
-        break;
-      }
+    if (email.isEmpty) {
+      showSnack("Enter your email");
+      return;
     }
 
-    if (found) {
-      showSnack("Email exists (demo)");
-    } else {
-      showSnack("Email not found");
+    try {
+      await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
+      showSnack("Password reset email sent");
+    } on FirebaseAuthException catch (e) {
+      showSnack(e.message ?? "Could not send reset email");
     }
   }
+
 
   void showSnack(String msg) {
     ScaffoldMessenger.of(context)

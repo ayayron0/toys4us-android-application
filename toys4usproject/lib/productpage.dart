@@ -1,25 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'Product.dart';
 import 'checkout.dart';
-
-void main() {
-  runApp(MaterialApp(home: ProductPage(product:
-  Product(
-      name: "Tomodachi Life: Living the Dream",
-      subtitle: "Who doesn’t want this new switch game? Build relationships and explore a fun virtual world.",
-      description: "Tomodachi Life: Living the Dream, known in Japan as Tomodachi Collection: Exciting Life, is a 2026 social simulation game by Nintendo for the Nintendo Switch. It is the third overall and second international entry in the Tomodachi Life series, succeeding Tomodachi Collection and Tomodachi Life. SOURCE: Wikipedia",
-      price: 21.99,
-      oldPrice: 29.99,
-      image: "assets/images/bear.png",
-      rating: 4.5,
-      reviews: 6780,
-      types: ['Digital', 'Physical']
-  )
-  ), debugShowCheckedModeBanner: false,
-  )
-  );
-}
 
 class ProductPage extends StatefulWidget {
   final Product product;
@@ -143,9 +126,22 @@ class _ProductPageState extends State<ProductPage> {
                   children: [
                     ElevatedButton.icon(
                     onPressed: () async {
-        final cart = FirebaseFirestore.instance.collection('cart_items');
+                      final user = FirebaseAuth.instance.currentUser;
 
-        // check if product already exists
+                      if (user == null) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text("Please log in first")),
+                        );
+                        return;
+                      }
+
+                      final cart = FirebaseFirestore.instance
+                          .collection('users')
+                          .doc(user.uid)
+                          .collection('cart_items');
+
+
+                      // check if product already exists
         final existing = await cart
             .where('name', isEqualTo: product.name)
             .get();

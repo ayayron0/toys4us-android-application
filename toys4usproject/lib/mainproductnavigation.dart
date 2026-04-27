@@ -2,6 +2,11 @@ import 'package:flutter/material.dart';
 import 'products.dart';
 import 'buildatoy.dart';
 import 'aboutus.dart';
+import 'profile.dart';
+import 'storelocation.dart';
+import 'orderhistory.dart';
+
+
 
 class MainProductNavigation extends StatefulWidget {
   @override
@@ -13,15 +18,21 @@ class _MainProductNavigationState extends State<MainProductNavigation> {
   int selectedIndex = 0;
 
   final List<Widget> pages = [
-    ProductsPage(),
-    BuildAToyPage(),
+    const ProductsPage(),
+    const BuildAToyPage(),
     AboutUsPage(),
+    const StoreLocationPage(),
+    const ProfilePage(),
+    const OrderHistoryPage(),
   ];
 
   final List<String> titles = [
     "Products",
     "Build-A-Toy",
     "About Us",
+    "Store Location",
+    "Profile",
+    "Order History",
   ];
 
   void changePage(int index) {
@@ -53,19 +64,40 @@ class _MainProductNavigationState extends State<MainProductNavigation> {
             ),
 
             ListTile(
-              title: Text("Products"),
+              leading: const Icon(Icons.storefront),
+              title: const Text("Products"),
               onTap: () => changePage(0),
             ),
 
             ListTile(
-              title: Text("Build-A-Toy"),
+              leading: const Icon(Icons.toys),
+              title: const Text("Build-A-Toy"),
               onTap: () => changePage(1),
             ),
 
             ListTile(
-              title: Text("About Us"),
+              leading: const Icon(Icons.info),
+              title: const Text("About Us"),
               onTap: () => changePage(2),
             ),
+
+            ListTile(
+              leading: const Icon(Icons.location_on),
+              title: const Text("Store Location"),
+              onTap: () => changePage(3),
+            ),
+
+            ListTile(
+              leading: const Icon(Icons.person),
+              title: const Text("Profile"),
+              onTap: () => changePage(4),
+            ),
+            ListTile(
+              leading: const Icon(Icons.receipt_long),
+              title: const Text("Order History"),
+              onTap: () => changePage(5),
+            ),
+
           ],
         ),
       ),

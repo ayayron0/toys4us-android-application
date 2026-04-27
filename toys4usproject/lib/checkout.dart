@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
 
 class CheckoutPage extends StatefulWidget {
   const CheckoutPage({super.key});
@@ -11,8 +13,34 @@ class CheckoutPage extends StatefulWidget {
 class _CheckoutPageState extends State<CheckoutPage> {
   int step = 0;
 
-  final cartRef = FirebaseFirestore.instance.collection('cart_items');
-  final userRef = FirebaseFirestore.instance.collection('user_details');
+  CollectionReference<Map<String, dynamic>> get cartRef {
+    final user = FirebaseAuth.instance.currentUser;
+
+    return FirebaseFirestore.instance
+        .collection('users')
+        .doc(user!.uid)
+        .collection('cart_items');
+  }
+
+  CollectionReference<Map<String, dynamic>> get userRef {
+    final user = FirebaseAuth.instance.currentUser;
+
+    return FirebaseFirestore.instance
+        .collection('users')
+        .doc(user!.uid)
+        .collection('user_details');
+  }
+
+  CollectionReference<Map<String, dynamic>> get ordersRef {
+    final user = FirebaseAuth.instance.currentUser;
+
+    return FirebaseFirestore.instance
+        .collection('users')
+        .doc(user!.uid)
+        .collection('orders');
+  }
+
+
 
   // Controllers
   final firstName = TextEditingController();
@@ -227,7 +255,36 @@ class _CheckoutPageState extends State<CheckoutPage> {
                       minimumSize: const Size(double.infinity, 50),
                     ),
                     onPressed: () async {
-                      // clear cart after purchase
+                      if (items.isEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text("Your cart is empty")),
+                        );
+                        return;
+                      }
+                      final orderItems = items.map((doc) {
+                        final data = doc.data();
+
+                        return {
+                          'name': data['name'],
+                          'price': data['price'],
+                          'image': data['image'],
+                          'quantity': data['quantity'],
+                          'type': data['type'],
+                          'color': data['color'],
+                          'accessory': data['accessory'],
+                          'voiceMessage': data['voiceMessage'],
+                        };
+                      }).toList();
+
+                      await ordersRef.add({
+                        'items': orderItems,
+                        'subtotal': total,
+                        'shipping': 30,
+                        'total': total + 30,
+                        'status': 'Processing',
+                        'createdAt': FieldValue.serverTimestamp(),
+                      });
+
                       for (var doc in items) {
                         await cartRef.doc(doc.id).delete();
                       }

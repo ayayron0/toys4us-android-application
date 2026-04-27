@@ -14,7 +14,7 @@ class AboutUsPage extends StatelessWidget {
 
           SizedBox(height: 10,),
 
-          Text("we are a very honest business that relies on customer satisfaction above all and quality merchandize for the kids ", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, ),),
+          Text("We are a very honest business that relies on customer satisfaction above all and quality merchandise for the kids ", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, ),),
 
           SizedBox(height: 20,),
 
