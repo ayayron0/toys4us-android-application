@@ -3,7 +3,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'mainproductnavigation.dart';
 
-
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -12,6 +11,38 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Toys 4 Us',
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.purple,
+          primary: Colors.purple,
+        ),
+        scaffoldBackgroundColor: const Color(0xFFF8F5FA),
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Colors.purple,
+          foregroundColor: Colors.white,
+          centerTitle: true,
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.purple,
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+        ),
+        cardTheme: CardThemeData(
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+        ),
+        inputDecorationTheme: InputDecorationTheme(
+          filled: true,
+          fillColor: Colors.white,
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+        ),
+      ),
       home: SplashScreen(),
     );
   }
@@ -19,8 +50,10 @@ class MyApp extends StatelessWidget {
 
 //splashing screen
 class SplashScreen extends StatefulWidget {
+  const SplashScreen({super.key});
+
   @override
-  _SplashScreenState createState() => _SplashScreenState();
+  State<SplashScreen> createState() => _SplashScreenState();
 }
 
 class _SplashScreenState extends State<SplashScreen> {
@@ -28,10 +61,13 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
     super.initState();
 
-    Future.delayed(Duration(seconds: 2), () {
+    Future.delayed(const Duration(seconds: 2), () {
+      if (!mounted) {
+        return;
+      }
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => LoginScreen()),
+        MaterialPageRoute(builder: (_) => const LoginScreen()),
       );
     });
   }
@@ -51,14 +87,15 @@ class _SplashScreenState extends State<SplashScreen> {
 
 //logging in
 class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
+
   @override
-  _LoginScreenState createState() => _LoginScreenState();
+  State<LoginScreen> createState() => _LoginScreenState();
 }
 
 class _LoginScreenState extends State<LoginScreen> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
-
 
   bool obscure = true;
 
@@ -77,6 +114,10 @@ class _LoginScreenState extends State<LoginScreen> {
         password: password,
       );
 
+      if (!mounted) {
+        return;
+      }
+
       showSnack("Login successful");
 
       Navigator.pushReplacement(
@@ -88,15 +129,16 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-
   void showSnack(String msg) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(msg)));
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
 
-  Widget buildField(String hint, IconData icon,
-      TextEditingController controller,
-      {bool isPassword = false}) {
+  Widget buildField(
+    String hint,
+    IconData icon,
+    TextEditingController controller, {
+    bool isPassword = false,
+  }) {
     return TextField(
       controller: controller,
       obscureText: isPassword ? obscure : false,
@@ -105,16 +147,13 @@ class _LoginScreenState extends State<LoginScreen> {
         hintText: hint,
         suffixIcon: isPassword
             ? IconButton(
-          icon: Icon(
-              obscure ? Icons.visibility : Icons.visibility_off),
-          onPressed: () {
-            setState(() => obscure = !obscure);
-          },
-        )
+                icon: Icon(obscure ? Icons.visibility : Icons.visibility_off),
+                onPressed: () {
+                  setState(() => obscure = !obscure);
+                },
+              )
             : null,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
       ),
     );
   }
@@ -127,15 +166,21 @@ class _LoginScreenState extends State<LoginScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text("WELCOME BACK",
-                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
+            Text(
+              "WELCOME BACK",
+              style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+            ),
             SizedBox(height: 20),
 
             buildField("Email", Icons.person, emailController),
             SizedBox(height: 10),
 
-            buildField("Password", Icons.lock, passwordController,
-                isPassword: true),
+            buildField(
+              "Password",
+              Icons.lock,
+              passwordController,
+              isPassword: true,
+            ),
 
             Align(
               alignment: Alignment.centerRight,
@@ -146,8 +191,10 @@ class _LoginScreenState extends State<LoginScreen> {
                     MaterialPageRoute(builder: (_) => ForgotScreen()),
                   );
                 },
-                child: Text("Forgot password?",
-                    style: TextStyle(color: Colors.purple)),
+                child: Text(
+                  "Forgot password?",
+                  style: TextStyle(color: Colors.purple),
+                ),
               ),
             ),
 
@@ -157,8 +204,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 minimumSize: Size(double.infinity, 50),
               ),
               onPressed: loginUser,
-              child:
-              Text("Login", style: TextStyle(color: Colors.white)),
+              child: Text("Login", style: TextStyle(color: Colors.white)),
             ),
 
             TextButton(
@@ -169,7 +215,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 );
               },
               child: Text("Sign up to create account"),
-            )
+            ),
           ],
         ),
       ),
@@ -179,15 +225,16 @@ class _LoginScreenState extends State<LoginScreen> {
 
 //signup
 class SignupScreen extends StatefulWidget {
+  const SignupScreen({super.key});
+
   @override
-  _SignupScreenState createState() => _SignupScreenState();
+  State<SignupScreen> createState() => _SignupScreenState();
 }
 
 class _SignupScreenState extends State<SignupScreen> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
   final confirmController = TextEditingController();
-
 
   bool obscure = true;
 
@@ -207,19 +254,17 @@ class _SignupScreenState extends State<SignupScreen> {
     }
 
     try {
-      final userCredential =
-      await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
+      final userCredential = await FirebaseAuth.instance
+          .createUserWithEmailAndPassword(email: email, password: password);
 
       await FirebaseFirestore.instance
           .collection('users')
           .doc(userCredential.user!.uid)
-          .set({
-        'email': email,
-        'createdAt': FieldValue.serverTimestamp(),
-      });
+          .set({'email': email, 'createdAt': FieldValue.serverTimestamp()});
+
+      if (!mounted) {
+        return;
+      }
 
       showSnack("Account created");
       Navigator.pop(context);
@@ -228,15 +273,16 @@ class _SignupScreenState extends State<SignupScreen> {
     }
   }
 
-
   void showSnack(String msg) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(msg)));
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
 
-  Widget buildField(String hint, IconData icon,
-      TextEditingController controller,
-      {bool isPassword = false}) {
+  Widget buildField(
+    String hint,
+    IconData icon,
+    TextEditingController controller, {
+    bool isPassword = false,
+  }) {
     return TextField(
       controller: controller,
       obscureText: isPassword ? obscure : false,
@@ -245,16 +291,13 @@ class _SignupScreenState extends State<SignupScreen> {
         hintText: hint,
         suffixIcon: isPassword
             ? IconButton(
-          icon: Icon(
-              obscure ? Icons.visibility : Icons.visibility_off),
-          onPressed: () {
-            setState(() => obscure = !obscure);
-          },
-        )
+                icon: Icon(obscure ? Icons.visibility : Icons.visibility_off),
+                onPressed: () {
+                  setState(() => obscure = !obscure);
+                },
+              )
             : null,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
       ),
     );
   }
@@ -268,19 +311,29 @@ class _SignupScreenState extends State<SignupScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text("CREATE AN ACCOUNT",
-                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
+            Text(
+              "CREATE AN ACCOUNT",
+              style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+            ),
             SizedBox(height: 20),
 
             buildField("Email", Icons.person, emailController),
             SizedBox(height: 10),
 
-            buildField("Password", Icons.lock, passwordController,
-                isPassword: true),
+            buildField(
+              "Password",
+              Icons.lock,
+              passwordController,
+              isPassword: true,
+            ),
             SizedBox(height: 10),
 
-            buildField("Confirm Password", Icons.lock, confirmController,
-                isPassword: true),
+            buildField(
+              "Confirm Password",
+              Icons.lock,
+              confirmController,
+              isPassword: true,
+            ),
 
             SizedBox(height: 10),
 
@@ -290,8 +343,10 @@ class _SignupScreenState extends State<SignupScreen> {
                 minimumSize: Size(double.infinity, 50),
               ),
               onPressed: signupUser,
-              child: Text("Create Account",
-                  style: TextStyle(color: Colors.white)),
+              child: Text(
+                "Create Account",
+                style: TextStyle(color: Colors.white),
+              ),
             ),
           ],
         ),
@@ -302,8 +357,10 @@ class _SignupScreenState extends State<SignupScreen> {
 
 //forgor pass
 class ForgotScreen extends StatefulWidget {
+  const ForgotScreen({super.key});
+
   @override
-  _ForgotScreenState createState() => _ForgotScreenState();
+  State<ForgotScreen> createState() => _ForgotScreenState();
 }
 
 class _ForgotScreenState extends State<ForgotScreen> {
@@ -319,16 +376,17 @@ class _ForgotScreenState extends State<ForgotScreen> {
 
     try {
       await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
+      if (!mounted) {
+        return;
+      }
       showSnack("Password reset email sent");
     } on FirebaseAuthException catch (e) {
       showSnack(e.message ?? "Could not send reset email");
     }
   }
 
-
   void showSnack(String msg) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(msg)));
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
 
   @override
@@ -340,8 +398,10 @@ class _ForgotScreenState extends State<ForgotScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text("FORGOT PASSWORD?",
-                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
+            Text(
+              "FORGOT PASSWORD?",
+              style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+            ),
             SizedBox(height: 20),
 
             TextField(
@@ -363,8 +423,7 @@ class _ForgotScreenState extends State<ForgotScreen> {
                 minimumSize: Size(double.infinity, 50),
               ),
               onPressed: checkEmail,
-              child:
-              Text("Submit", style: TextStyle(color: Colors.white)),
+              child: Text("Submit", style: TextStyle(color: Colors.white)),
             ),
           ],
         ),
@@ -375,13 +434,12 @@ class _ForgotScreenState extends State<ForgotScreen> {
 
 //home place holder
 class HomeScreen extends StatelessWidget {
+  const HomeScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Toys 4 Us"),
-        backgroundColor: Colors.purple,
-      ),
+      appBar: AppBar(title: Text("Toys 4 Us"), backgroundColor: Colors.purple),
       body: Center(
         child: Text("Welcome  to toys 4 us come view our coool prods"),
       ),
