@@ -1,9 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
-import 'joke_service.dart';
+import '../../services/joke_service.dart';
 import 'product.dart';
-import 'productpage.dart';
+import 'product_page.dart';
 
 class ProductsPage extends StatefulWidget {
   const ProductsPage({super.key});

@@ -2,9 +2,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-import 'logon.dart';
-import 'notification_manager.dart';
-import 'orderhistory.dart';
+import '../auth/logon.dart';
+import '../../core/notification_manager.dart';
+import '../orders/orderhistory.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});

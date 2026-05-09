@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 
 import 'firebase_options.dart';
-import 'local_notification_service.dart';
-import 'logon.dart';
+import 'core/local_notification_service.dart';
+import 'features/auth/logon.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();

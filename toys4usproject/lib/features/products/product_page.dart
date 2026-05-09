@@ -3,9 +3,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import 'product.dart';
-import 'cartpage.dart';
-import 'checkout.dart';
-import 'notification_manager.dart';
+import '../cart/cartpage.dart';
+import '../checkout/checkout.dart';
+import '../../core/notification_manager.dart';
 
 class ProductPage extends StatefulWidget {
   final Product product;

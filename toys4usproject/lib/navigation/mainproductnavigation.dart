@@ -1,15 +1,15 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'adminorderspage.dart';
-import 'adminproductspage.dart';
-import 'logon.dart';
-import 'products.dart';
-import 'buildatoy.dart';
-import 'cartpage.dart';
-import 'aboutus.dart';
-import 'profile.dart';
-import 'storelocation.dart';
-import 'orderhistory.dart';
+import '../features/admin/adminorderspage.dart';
+import '../features/admin/adminproductspage.dart';
+import '../features/auth/logon.dart';
+import '../features/products/products.dart';
+import '../features/build_a_toy/build_a_toy.dart';
+import '../features/cart/cartpage.dart';
+import '../shared/aboutus.dart';
+import '../features/profile/profile.dart';
+import '../shared/storelocation.dart';
+import '../features/orders/orderhistory.dart';
 
 class MainProductNavigation extends StatefulWidget {
   const MainProductNavigation({super.key});

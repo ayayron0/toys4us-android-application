@@ -2,8 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-import 'mainproductnavigation.dart';
-import 'notification_manager.dart';
+import '../../navigation/mainproductnavigation.dart';
+import '../../core/notification_manager.dart';
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});

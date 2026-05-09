@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-import 'notification_manager.dart';
+import '../../core/notification_manager.dart';
 
 class BuildAToyPage extends StatefulWidget {
   const BuildAToyPage({super.key});

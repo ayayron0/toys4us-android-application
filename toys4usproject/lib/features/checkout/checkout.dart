@@ -2,9 +2,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-import 'local_notification_service.dart';
-import 'notification_manager.dart';
-import 'orderhistory.dart';
+import '../../core/local_notification_service.dart';
+import '../../core/notification_manager.dart';
+import '../orders/orderhistory.dart';
 
 class CheckoutPage extends StatefulWidget {
   const CheckoutPage({super.key});
