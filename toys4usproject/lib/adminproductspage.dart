@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
+import 'notification_manager.dart';
+
 class AdminProductsPage extends StatelessWidget {
   const AdminProductsPage({super.key});
 
@@ -158,12 +160,9 @@ class AdminProductsPage extends StatelessWidget {
                                   price.text.trim().isEmpty ||
                                   image.text.trim().isEmpty ||
                                   types.text.trim().isEmpty) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text(
-                                      "Name, description, price, image, and types are required",
-                                    ),
-                                  ),
+                                NotificationManager.error(
+                                  context,
+                                  "Name, description, price, image, and types are required",
                                 );
                                 return;
                               }

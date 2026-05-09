@@ -423,7 +423,15 @@ class OrderDetailScreen extends StatelessWidget {
           ClipRRect(
             borderRadius: BorderRadius.circular(8),
             child: image.toString().isNotEmpty
-                ? Image.asset(image, width: 58, height: 58, fit: BoxFit.cover)
+                ? Image.asset(
+                    image,
+                    width: 58,
+                    height: 58,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return imageFallback();
+                    },
+                  )
                 : Container(
                     width: 58,
                     height: 58,
@@ -498,6 +506,15 @@ class OrderDetailScreen extends StatelessWidget {
       'status': 'Cancelled',
       'cancelledAt': FieldValue.serverTimestamp(),
     });
+  }
+
+  Widget imageFallback() {
+    return Container(
+      width: 58,
+      height: 58,
+      color: Colors.grey.shade200,
+      child: const Icon(Icons.image_not_supported_outlined),
+    );
   }
 
   @override

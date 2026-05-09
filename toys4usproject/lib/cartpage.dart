@@ -151,6 +151,9 @@ class CartPage extends StatelessWidget {
                           width: 76,
                           height: 76,
                           fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return imageFallback();
+                          },
                         )
                       : Container(
                           width: 76,
@@ -265,6 +268,15 @@ class CartPage extends StatelessWidget {
           );
         }).toList(),
       ),
+    );
+  }
+
+  Widget imageFallback() {
+    return Container(
+      width: 76,
+      height: 76,
+      color: Colors.grey.shade200,
+      child: const Icon(Icons.image_not_supported_outlined),
     );
   }
 

@@ -2,6 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+import 'local_notification_service.dart';
+import 'notification_manager.dart';
 import 'orderhistory.dart';
 
 class CheckoutPage extends StatefulWidget {
@@ -159,9 +161,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
   }
 
   void showMessage(String message) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
+    NotificationManager.info(context, message);
   }
 
   Widget pageShell({
@@ -352,6 +352,9 @@ class _CheckoutPageState extends State<CheckoutPage> {
                           width: 68,
                           height: 68,
                           fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return imageFallback();
+                          },
                         )
                       : Container(
                           width: 68,
@@ -458,6 +461,15 @@ class _CheckoutPageState extends State<CheckoutPage> {
           );
         }).toList(),
       ),
+    );
+  }
+
+  Widget imageFallback() {
+    return Container(
+      width: 68,
+      height: 68,
+      color: Colors.grey.shade200,
+      child: const Icon(Icons.image_not_supported_outlined),
     );
   }
 
@@ -712,6 +724,10 @@ class _CheckoutPageState extends State<CheckoutPage> {
                           for (final doc in items) {
                             await cartRef.doc(doc.id).delete();
                           }
+
+                          await LocalNotificationService.showOrderConfirmedNotification(
+                            total: total + 30,
+                          );
 
                           if (!mounted) {
                             return;

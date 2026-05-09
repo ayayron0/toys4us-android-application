@@ -3,6 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import 'logon.dart';
+import 'notification_manager.dart';
+import 'orderhistory.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -79,9 +81,7 @@ class _ProfilePageState extends State<ProfilePage> {
       saving = false;
     });
 
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text("Profile saved")));
+    NotificationManager.success(context, "Profile saved");
   }
 
   Future<void> logout() async {
@@ -98,12 +98,18 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Widget input(TextEditingController controller, String label, IconData icon) {
+  Widget input(
+    TextEditingController controller,
+    String label,
+    IconData icon, {
+    TextInputType? keyboardType,
+  }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: TextField(
         controller: controller,
         textInputAction: TextInputAction.next,
+        keyboardType: keyboardType,
         decoration: InputDecoration(
           labelText: label,
           prefixIcon: Icon(icon),
@@ -116,6 +122,66 @@ class _ProfilePageState extends State<ProfilePage> {
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10),
             borderSide: const BorderSide(color: brandColor, width: 1.5),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget actionTile({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+    Color color = brandColor,
+  }) {
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(12),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.grey.shade200),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  color: color == brandColor
+                      ? const Color(0xFFF1E5F6)
+                      : Colors.red.shade50,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(icon, color: color),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      subtitle,
+                      style: TextStyle(color: Colors.grey.shade700),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(Icons.chevron_right, color: Colors.grey.shade500),
+            ],
           ),
         ),
       ),
@@ -190,17 +256,55 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
               ),
               const SizedBox(height: 14),
+              actionTile(
+                icon: Icons.receipt_long,
+                title: "Order History",
+                subtitle: "View purchases, delivery status, and past items",
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => Scaffold(
+                        appBar: AppBar(
+                          title: const Text("Order History"),
+                          backgroundColor: brandColor,
+                          foregroundColor: Colors.white,
+                        ),
+                        body: const OrderHistoryPage(),
+                      ),
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: 18),
               const Text(
                 "Saved Delivery Details",
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
               ),
               const SizedBox(height: 10),
-              input(firstName, "First Name", Icons.person_outline),
-              input(lastName, "Last Name", Icons.person_outline),
-              input(phone, "Phone", Icons.phone_outlined),
-              input(address, "Address", Icons.home_outlined),
-              input(city, "City", Icons.location_city_outlined),
-              input(country, "Country", Icons.public),
+              Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.grey.shade200),
+                ),
+                child: Column(
+                  children: [
+                    input(firstName, "First Name", Icons.person_outline),
+                    input(lastName, "Last Name", Icons.person_outline),
+                    input(
+                      phone,
+                      "Phone",
+                      Icons.phone_outlined,
+                      keyboardType: TextInputType.phone,
+                    ),
+                    input(address, "Address", Icons.home_outlined),
+                    input(city, "City", Icons.location_city_outlined),
+                    input(country, "Country", Icons.public),
+                  ],
+                ),
+              ),
               const SizedBox(height: 6),
               ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(
@@ -219,14 +323,12 @@ class _ProfilePageState extends State<ProfilePage> {
                 label: Text(saving ? "Saving..." : "Save Profile"),
               ),
               const SizedBox(height: 10),
-              OutlinedButton.icon(
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: Colors.red,
-                  minimumSize: const Size(double.infinity, 52),
-                ),
-                onPressed: logout,
-                icon: const Icon(Icons.logout),
-                label: const Text("Logout"),
+              actionTile(
+                icon: Icons.logout,
+                title: "Logout",
+                subtitle: "Sign out of this Toys 4 Us account",
+                color: Colors.red,
+                onTap: logout,
               ),
             ],
           ),
