@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 
 import 'product.dart';
 import '../cart/cartpage.dart';
-import '../checkout/checkout.dart';
+import '../checkout/checkout_page.dart';
 import '../../core/notification_manager.dart';
 
 class ProductPage extends StatefulWidget {

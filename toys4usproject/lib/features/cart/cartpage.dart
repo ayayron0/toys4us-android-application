@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-import '../checkout/checkout.dart';
+import '../checkout/checkout_page.dart';
 
 class CartScreen extends StatelessWidget {
   const CartScreen({super.key});
