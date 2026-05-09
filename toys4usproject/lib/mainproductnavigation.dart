@@ -89,9 +89,9 @@ class _MainProductNavigationState extends State<MainProductNavigation> {
       const BuildAToyPage(),
       const CartPage(),
       const OrderHistoryPage(),
-      const ProfilePage(),
       const StoreLocationPage(),
       AboutUsPage(),
+      const ProfilePage(),
       if (isAdmin) const AdminProductsPage(),
       if (isAdmin) const AdminOrdersPage(),
     ];
@@ -101,9 +101,9 @@ class _MainProductNavigationState extends State<MainProductNavigation> {
       "Build-A-Toy",
       "Cart",
       "Order History",
-      "Profile",
       "Store Location",
       "About Us",
+      "Profile",
       if (isAdmin) "Manage Products",
       if (isAdmin) "Manage Orders",
     ];
@@ -183,13 +183,14 @@ class _MainProductNavigationState extends State<MainProductNavigation> {
               icon: Icons.receipt_long,
               title: "Order History",
             ),
-            drawerItem(index: 4, icon: Icons.person, title: "Profile"),
+
             drawerItem(
-              index: 5,
+              index: 4,
               icon: Icons.location_on,
               title: "Store Location",
             ),
-            drawerItem(index: 6, icon: Icons.info, title: "About Us"),
+            drawerItem(index: 5, icon: Icons.info, title: "About Us"),
+            drawerItem(index: 6, icon: Icons.person, title: "Profile"),
 
             if (isAdmin) ...[
               const Padding(
