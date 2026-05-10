@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../services/joke_service.dart';
+import '../../shared/product_image.dart';
 import 'product.dart';
 import 'product_page.dart';
 
@@ -376,44 +377,7 @@ class _ProductsPageState extends State<ProductsPage> {
       ),
     );
   }
-  
-  Widget buildImage(String imagePath) {
-    if (imagePath.startsWith('http')) {
-      return Image.network(
-        imagePath,
-        height: 200,
-        width: double.infinity,
-        fit: BoxFit.contain,
-        errorBuilder: (context, error, stackTrace) {
-          return Container(
-            color: Colors.grey.shade200,
-            child: const Icon(
-              Icons.image_not_supported_outlined,
-              size: 42,
-              color: Colors.grey,
-            ),
-          );
-        },
-      );
-    } else {
-      return Image.asset(
-        imagePath,
-        height: 200,
-        width: double.infinity,
-        fit: BoxFit.contain,
-        errorBuilder: (context, error, stackTrace) {
-          return Container(
-            color: Colors.grey.shade200,
-            child: const Icon(
-              Icons.image_not_supported_outlined,
-              size: 42,
-              color: Colors.grey,
-            ),
-          );
-        },
-      );
-    }
-  }
+
 
   Widget _buildProductCard(BuildContext context, Product product) {
     return InkWell(
@@ -435,8 +399,8 @@ class _ProductsPageState extends State<ProductsPage> {
           children: [
             AspectRatio(
               aspectRatio: 1.2,
-              child: 
-                buildImage(product.image)
+              child:
+              ProductImage(imagePath: product.image)
             ),
             Expanded(
               child: Padding(

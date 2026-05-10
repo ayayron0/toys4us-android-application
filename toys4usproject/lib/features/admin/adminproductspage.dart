@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/notification_manager.dart';
+import '../../shared/product_image.dart';
 
 class AdminProductsPage extends StatefulWidget {
   const AdminProductsPage({super.key});
@@ -36,162 +37,174 @@ class _AdminProductsPageState extends State<AdminProductsPage> {
 
     final isEditing = productDoc != null;
 
+    if (!mounted) return;
+
     await showDialog<void>(
       context: context,
+      barrierDismissible: false,
       builder: (dialogContext) {
-        return Dialog(
-          insetPadding: const EdgeInsets.all(18),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
-          ),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 520),
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.all(18),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
+        return StatefulBuilder(
+          builder: (dialogContext, setDialogState) {
+            return Dialog(
+              insetPadding: const EdgeInsets.all(18),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 520),
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.all(18),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Container(
-                          width: 42,
-                          height: 42,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFF1E5F6),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Icon(
-                            isEditing
-                                ? Icons.edit_outlined
-                                : Icons.add_box_outlined,
-                            color: brandColor,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            isEditing ? "Edit Product" : "Add Product",
-                            style: const TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.w800,
+                        Row(
+                          children: [
+                            Container(
+                              width: 42,
+                              height: 42,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFF1E5F6),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Icon(
+                                isEditing
+                                    ? Icons.edit_outlined
+                                    : Icons.add_box_outlined,
+                                color: brandColor,
+                              ),
                             ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 18),
-                    input(name, "Name", Icons.sell_outlined),
-                    input(subtitle, "Subtitle", Icons.short_text),
-                    input(description, "Description", Icons.notes_outlined, maxLines: 3),
-                    Row(
-                      children: [
-                        Expanded(child: input(price, "Price", Icons.attach_money, keyboardType: TextInputType.number)),
-                        const SizedBox(width: 10),
-                        Expanded(child: input(oldPrice, "Old Price", Icons.price_change_outlined, keyboardType: TextInputType.number)),
-                      ],
-                    ),
-                    input(image, "Image Path", Icons.image_outlined),
-                    Row(
-                      children: [
-                        Expanded(child: input(rating, "Rating", Icons.star_outline, keyboardType: TextInputType.number)),
-                        const SizedBox(width: 10),
-                        Expanded(child: input(reviews, "Reviews", Icons.rate_review_outlined, keyboardType: TextInputType.number)),
-                      ],
-                    ),
-                    input(types, "Types: toy, game, cards", Icons.category_outlined),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: OutlinedButton(
-                            style: OutlinedButton.styleFrom(
-                              minimumSize: const Size(double.infinity, 48),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                isEditing ? "Edit Product" : "Add Product",
+                                style: const TextStyle(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
                             ),
-                            onPressed: () => Navigator.pop(dialogContext),
-                            child: const Text("Cancel"),
-                          ),
+                          ],
                         ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: brandColor,
-                              foregroundColor: Colors.white,
-                              minimumSize: const Size(double.infinity, 48),
+                        const SizedBox(height: 18),
+                        input(name, "Name", Icons.sell_outlined),
+                        input(subtitle, "Subtitle", Icons.short_text),
+                        input(description, "Description", Icons.notes_outlined, maxLines: 3),
+                        Row(
+                          children: [
+                            Expanded(child: input(price, "Price", Icons.attach_money, keyboardType: TextInputType.number)),
+                            const SizedBox(width: 10),
+                            Expanded(child: input(oldPrice, "Old Price", Icons.price_change_outlined, keyboardType: TextInputType.number)),
+                          ],
+                        ),
+                        input(image, "Image Path", Icons.image_outlined),
+                        Row(
+                          children: [
+                            Expanded(child: input(rating, "Rating", Icons.star_outline, keyboardType: TextInputType.number)),
+                            const SizedBox(width: 10),
+                            Expanded(child: input(reviews, "Reviews", Icons.rate_review_outlined, keyboardType: TextInputType.number)),
+                          ],
+                        ),
+                        input(types, "Types: toy, game, cards", Icons.category_outlined),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: OutlinedButton(
+                                style: OutlinedButton.styleFrom(
+                                  minimumSize: const Size(double.infinity, 48),
+                                ),
+                                onPressed: () => Navigator.pop(dialogContext),
+                                child: const Text("Cancel"),
+                              ),
                             ),
-                            onPressed: () async {
-                              if (name.text.trim().isEmpty ||
-                                  description.text.trim().isEmpty ||
-                                  price.text.trim().isEmpty ||
-                                  image.text.trim().isEmpty ||
-                                  types.text.trim().isEmpty) {
-                                if (dialogContext.mounted) {
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: brandColor,
+                                  foregroundColor: Colors.white,
+                                  minimumSize: const Size(double.infinity, 48),
+                                ),
+                                onPressed: () async {
+                                  if (name.text.trim().isEmpty ||
+                                      description.text.trim().isEmpty ||
+                                      price.text.trim().isEmpty ||
+                                      image.text.trim().isEmpty ||
+                                      types.text.trim().isEmpty) {
+                                    Navigator.pop(dialogContext);
+                                    if (mounted) {
+                                      NotificationManager.error(
+                                        context,
+                                        "Name, description, price, image, and types are required",
+                                      );
+                                    }
+                                    return;
+                                  }
+
+                                  final productData = {
+                                    'name': name.text.trim(),
+                                    'subtitle': subtitle.text.trim(),
+                                    'description': description.text.trim(),
+                                    'price': double.tryParse(price.text.trim()) ?? 0,
+                                    'oldPrice': double.tryParse(oldPrice.text.trim()) ?? 0,
+                                    'image': image.text.trim(),
+                                    'rating': double.tryParse(rating.text.trim()) ?? 0,
+                                    'reviews': int.tryParse(reviews.text.trim()) ?? 0,
+                                    'types': types.text
+                                        .split(',')
+                                        .map((type) => type.trim().toLowerCase())
+                                        .where((type) => type.isNotEmpty)
+                                        .toList(),
+                                    'updatedAt': FieldValue.serverTimestamp(),
+                                  };
+
+                                  // close dialog first, then write to Firestore
                                   Navigator.pop(dialogContext);
-                                }
-                                if (mounted) {
-                                  NotificationManager.error(
-                                    context,
-                                    "Name, description, price, image, and types are required",
-                                  );
-                                }
-                                return;
-                              }
 
-                              final productData = {
-                                'name': name.text.trim(),
-                                'subtitle': subtitle.text.trim(),
-                                'description': description.text.trim(),
-                                'price': double.tryParse(price.text.trim()) ?? 0,
-                                'oldPrice': double.tryParse(oldPrice.text.trim()) ?? 0,
-                                'image': image.text.trim(),
-                                'rating': double.tryParse(rating.text.trim()) ?? 0,
-                                'reviews': int.tryParse(reviews.text.trim()) ?? 0,
-                                'types': types.text
-                                    .split(',')
-                                    .map((type) => type.trim().toLowerCase())
-                                    .where((type) => type.isNotEmpty)
-                                    .toList(),
-                                'updatedAt': FieldValue.serverTimestamp(),
-                              };
+                                  if (isEditing) {
+                                    await productDoc.reference.update(productData);
+                                  } else {
+                                    await productsRef.add({
+                                      ...productData,
+                                      'createdAt': FieldValue.serverTimestamp(),
+                                    });
+                                  }
 
-                              if (isEditing) {
-                                await productDoc.reference.update(productData);
-                              } else {
-                                await productsRef.add({
-                                  ...productData,
-                                  'createdAt': FieldValue.serverTimestamp(),
-                                });
-                              }
-
-                              if (dialogContext.mounted) {
-                                Navigator.pop(dialogContext);
-                              }
-                            },
-                            child: Text(isEditing ? "Save Changes" : "Add"),
-                          ),
+                                  if (mounted) {
+                                    NotificationManager.success(
+                                      context,
+                                      isEditing ? "Product updated" : "Product added",
+                                    );
+                                  }
+                                },
+                                child: Text(isEditing ? "Save Changes" : "Add"),
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
-                  ],
+                  ),
                 ),
               ),
-            ),
-          ),
+            );
+          },
         );
       },
     );
 
-    name.dispose();
-    subtitle.dispose();
-    description.dispose();
-    price.dispose();
-    oldPrice.dispose();
-    image.dispose();
-    rating.dispose();
-    reviews.dispose();
-    types.dispose();
+    // these were breaking stuff, keep them out
+    // name.dispose();
+    // subtitle.dispose();
+    // description.dispose();
+    // price.dispose();
+    // oldPrice.dispose();
+    // image.dispose();
+    // rating.dispose();
+    // reviews.dispose();
+    // types.dispose();
   }
   Widget input(
     TextEditingController controller,
@@ -336,17 +349,12 @@ class _AdminProductsPageState extends State<AdminProductsPage> {
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(10),
-              child: image.toString().isNotEmpty
-                  ? Image.asset(
-                      image,
-                      width: 72,
-                      height: 72,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return imageFallback();
-                      },
-                    )
-                  : imageFallback(),
+              child: ProductImage(
+                imagePath: image,
+                height: 72,
+                width: 72,
+                fit: BoxFit.contain,
+              ),
             ),
             const SizedBox(width: 12),
             Expanded(

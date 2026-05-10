@@ -2,6 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+import '../../shared/product_image.dart';
+
 class OrderHistoryScreen extends StatelessWidget {
   const OrderHistoryScreen({super.key});
 
@@ -422,22 +424,12 @@ class OrderDetailScreen extends StatelessWidget {
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(8),
-            child: image.toString().isNotEmpty
-                ? Image.asset(
-                    image,
-                    width: 58,
-                    height: 58,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return imageFallback();
-                    },
-                  )
-                : Container(
-                    width: 58,
-                    height: 58,
-                    color: Colors.grey.shade200,
-                    child: const Icon(Icons.shopping_bag_outlined),
-                  ),
+            child: ProductImage(
+              imagePath: image,
+              height: 58,
+              width: 58,
+              fit: BoxFit.contain,
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(

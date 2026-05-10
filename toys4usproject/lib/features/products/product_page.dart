@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+import '../../shared/product_image.dart';
 import 'product.dart';
 import '../cart/cartpage.dart';
 import '../checkout/checkout_page.dart';
@@ -216,21 +217,10 @@ class _ProductPageState extends State<ProductPage> {
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: Image.asset(
-                            product.image,
+                          child: ProductImage(
+                            imagePath: product.image,
                             height: 250,
                             fit: BoxFit.contain,
-                            errorBuilder: (context, error, stackTrace) {
-                              return Container(
-                                height: 250,
-                                alignment: Alignment.center,
-                                child: const Icon(
-                                  Icons.image_not_supported_outlined,
-                                  size: 72,
-                                  color: Colors.grey,
-                                ),
-                              );
-                            },
                           ),
                         ),
                         const SizedBox(height: 16),

@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+import '../../shared/product_image.dart';
 import '../checkout/checkout_page.dart';
 
 class CartScreen extends StatelessWidget {
@@ -145,22 +146,12 @@ class CartPage extends StatelessWidget {
               children: [
                 ClipRRect(
                   borderRadius: BorderRadius.circular(8),
-                  child: image.isNotEmpty
-                      ? Image.asset(
-                          image,
-                          width: 76,
-                          height: 76,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return imageFallback();
-                          },
-                        )
-                      : Container(
-                          width: 76,
-                          height: 76,
-                          color: Colors.grey.shade200,
-                          child: const Icon(Icons.toys_outlined),
-                        ),
+                  child: ProductImage(
+                    imagePath: image,
+                    height: 76,
+                    width: 76,
+                    fit: BoxFit.contain,
+                  ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -268,15 +259,6 @@ class CartPage extends StatelessWidget {
           );
         }).toList(),
       ),
-    );
-  }
-
-  Widget imageFallback() {
-    return Container(
-      width: 76,
-      height: 76,
-      color: Colors.grey.shade200,
-      child: const Icon(Icons.image_not_supported_outlined),
     );
   }
 
