@@ -3,9 +3,14 @@ import 'package:flutter/material.dart';
 
 import '../../core/notification_manager.dart';
 
-class AdminProductsPage extends StatelessWidget {
+class AdminProductsPage extends StatefulWidget {
   const AdminProductsPage({super.key});
 
+  @override
+  State<AdminProductsPage> createState() => _AdminProductsPageState();
+}
+
+class _AdminProductsPageState extends State<AdminProductsPage> {
   static const Color brandColor = Color(0xFF7B1FA2);
   static const Color softBackground = Color(0xFFF8F5FA);
 
@@ -13,8 +18,7 @@ class AdminProductsPage extends StatelessWidget {
     return FirebaseFirestore.instance.collection('products');
   }
 
-  Future<void> openProductDialog(
-    BuildContext context, {
+  Future<void> openProductDialog({
     QueryDocumentSnapshot<Map<String, dynamic>>? productDoc,
   }) async {
     final data = productDoc?.data() ?? {};
@@ -49,7 +53,55 @@ class AdminProductsPage extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // ... all the same content ...
+                    Row(
+                      children: [
+                        Container(
+                          width: 42,
+                          height: 42,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF1E5F6),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Icon(
+                            isEditing
+                                ? Icons.edit_outlined
+                                : Icons.add_box_outlined,
+                            color: brandColor,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            isEditing ? "Edit Product" : "Add Product",
+                            style: const TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 18),
+                    input(name, "Name", Icons.sell_outlined),
+                    input(subtitle, "Subtitle", Icons.short_text),
+                    input(description, "Description", Icons.notes_outlined, maxLines: 3),
+                    Row(
+                      children: [
+                        Expanded(child: input(price, "Price", Icons.attach_money, keyboardType: TextInputType.number)),
+                        const SizedBox(width: 10),
+                        Expanded(child: input(oldPrice, "Old Price", Icons.price_change_outlined, keyboardType: TextInputType.number)),
+                      ],
+                    ),
+                    input(image, "Image Path", Icons.image_outlined),
+                    Row(
+                      children: [
+                        Expanded(child: input(rating, "Rating", Icons.star_outline, keyboardType: TextInputType.number)),
+                        const SizedBox(width: 10),
+                        Expanded(child: input(reviews, "Reviews", Icons.rate_review_outlined, keyboardType: TextInputType.number)),
+                      ],
+                    ),
+                    input(types, "Types: toy, game, cards", Icons.category_outlined),
+                    const SizedBox(height: 8),
                     Row(
                       children: [
                         Expanded(
@@ -75,10 +127,15 @@ class AdminProductsPage extends StatelessWidget {
                                   price.text.trim().isEmpty ||
                                   image.text.trim().isEmpty ||
                                   types.text.trim().isEmpty) {
-                                NotificationManager.error(
-                                  context,
-                                  "Name, description, price, image, and types are required",
-                                );
+                                if (dialogContext.mounted) {
+                                  Navigator.pop(dialogContext);
+                                }
+                                if (mounted) {
+                                  NotificationManager.error(
+                                    context,
+                                    "Name, description, price, image, and types are required",
+                                  );
+                                }
                                 return;
                               }
 
@@ -109,7 +166,7 @@ class AdminProductsPage extends StatelessWidget {
                               }
 
                               if (dialogContext.mounted) {
-                                Navigator.pop(dialogContext); // <-- dialogContext
+                                Navigator.pop(dialogContext);
                               }
                             },
                             child: Text(isEditing ? "Save Changes" : "Add"),
@@ -136,7 +193,6 @@ class AdminProductsPage extends StatelessWidget {
     reviews.dispose();
     types.dispose();
   }
-
   Widget input(
     TextEditingController controller,
     String label,
@@ -363,7 +419,7 @@ class AdminProductsPage extends StatelessWidget {
                 IconButton(
                   tooltip: "Edit",
                   icon: const Icon(Icons.edit_outlined),
-                  onPressed: () => openProductDialog(context, productDoc: doc),
+                  onPressed: () => openProductDialog(productDoc: doc),
                 ),
                 IconButton(
                   tooltip: "Delete",
@@ -395,7 +451,7 @@ class AdminProductsPage extends StatelessWidget {
       floatingActionButton: FloatingActionButton.extended(
         backgroundColor: brandColor,
         foregroundColor: Colors.white,
-        onPressed: () => openProductDialog(context),
+        onPressed: () => openProductDialog(),
         icon: const Icon(Icons.add),
         label: const Text("Add Product"),
       ),

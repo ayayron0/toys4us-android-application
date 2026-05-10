@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../services/joke_service.dart';
@@ -282,25 +283,22 @@ class _ProductsPageState extends State<ProductsPage> {
                             padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                             sliver: SliverLayoutBuilder(
                               builder: (context, constraints) {
-                                final isWide =
-                                    constraints.crossAxisExtent >= 600;
+                                final isWeb = kIsWeb;
 
                                 return SliverGrid(
-                                  gridDelegate:
-                                      SliverGridDelegateWithFixedCrossAxisCount(
-                                        crossAxisCount: isWide ? 3 : 2,
-                                        crossAxisSpacing: 12,
-                                        mainAxisSpacing: 12,
-                                        childAspectRatio: isWide ? 0.72 : 0.55,
-                                      ),
-                                  delegate: SliverChildBuilderDelegate((
-                                    context,
-                                    index,
-                                  ) {
-                                    final product = filteredProducts[index];
-
-                                    return _buildProductCard(context, product);
-                                  }, childCount: filteredProducts.length),
+                                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: isWeb? (constraints.crossAxisExtent / 200).floor() : 2,
+                                    crossAxisSpacing: 12,
+                                    mainAxisSpacing: 12,
+                                    childAspectRatio: isWeb ? 0.65 : 0.55,
+                                  ),
+                                  delegate: SliverChildBuilderDelegate(
+                                        (context, index) {
+                                      final product = filteredProducts[index];
+                                      return _buildProductCard(context, product);
+                                    },
+                                    childCount: filteredProducts.length,
+                                  ),
                                 );
                               },
                             ),
