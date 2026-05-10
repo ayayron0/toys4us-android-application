@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../../shared/product_image.dart';
+import '../build_a_toy/build_a_toy.dart';
 import '../checkout/checkout_page.dart';
 
 class CartScreen extends StatelessWidget {
@@ -122,7 +123,29 @@ class CartPage extends StatelessWidget {
     );
   }
 
-  Widget cartItem(QueryDocumentSnapshot<Map<String, dynamic>> doc) {
+  void editCustomToy(
+    BuildContext context,
+    QueryDocumentSnapshot<Map<String, dynamic>> doc,
+  ) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => Scaffold(
+          appBar: AppBar(
+            title: const Text("Edit Custom Toy"),
+            backgroundColor: brandColor,
+            foregroundColor: Colors.white,
+          ),
+          body: BuildAToyPage(cartItemId: doc.id, initialData: doc.data()),
+        ),
+      ),
+    );
+  }
+
+  Widget cartItem(
+    BuildContext context,
+    QueryDocumentSnapshot<Map<String, dynamic>> doc,
+  ) {
     final data = doc.data();
     final image = data['image'] ?? '';
     final name = data['name'] ?? 'Cart item';
@@ -144,15 +167,7 @@ class CartPage extends StatelessWidget {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: ProductImage(
-                    imagePath: image,
-                    height: 76,
-                    width: 76,
-                    fit: BoxFit.contain,
-                  ),
-                ),
+                customToyImage(data, image),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
@@ -225,9 +240,71 @@ class CartPage extends StatelessWidget {
             if (isCustomToy) ...[
               const SizedBox(height: 10),
               buildCustomDetails(data),
+              const SizedBox(height: 8),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: OutlinedButton.icon(
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: brandColor,
+                    side: const BorderSide(color: brandColor),
+                  ),
+                  onPressed: () => editCustomToy(context, doc),
+                  icon: const Icon(Icons.edit_outlined, size: 18),
+                  label: const Text("Edit Custom Toy"),
+                ),
+              ),
             ],
           ],
         ),
+      ),
+    );
+  }
+
+  Widget customToyImage(Map<String, dynamic> data, String image) {
+    final overlays = data['accessoryOverlays'];
+    final overlayPaths = overlays is List
+        ? overlays.map((item) => item.toString()).toList()
+        : <String>[];
+
+    if (data['isCustomToy'] == true && overlayPaths.isNotEmpty) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(8),
+        child: SizedBox(
+          width: 76,
+          height: 76,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              ProductImage(
+                imagePath: image,
+                height: 76,
+                width: 76,
+                fit: BoxFit.contain,
+              ),
+              ...overlayPaths.map(
+                (overlayPath) => Image.asset(
+                  overlayPath,
+                  width: 76,
+                  height: 76,
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) {
+                    return const SizedBox.shrink();
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(8),
+      child: ProductImage(
+        imagePath: image,
+        height: 76,
+        width: 76,
+        fit: BoxFit.contain,
       ),
     );
   }
@@ -316,7 +393,8 @@ class CartPage extends StatelessWidget {
                 child: ListView.builder(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   itemCount: items.length,
-                  itemBuilder: (context, index) => cartItem(items[index]),
+                  itemBuilder: (context, index) =>
+                      cartItem(context, items[index]),
                 ),
               ),
               SafeArea(

@@ -1,11 +1,16 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 
 import '../../core/notification_manager.dart';
 
 class BuildAToyPage extends StatefulWidget {
-  const BuildAToyPage({super.key});
+  final String? cartItemId;
+  final Map<String, dynamic>? initialData;
+
+  const BuildAToyPage({super.key, this.cartItemId, this.initialData});
 
   @override
   State<BuildAToyPage> createState() => _BuildAToyPageState();
@@ -14,9 +19,11 @@ class BuildAToyPage extends StatefulWidget {
 class _BuildAToyPageState extends State<BuildAToyPage> {
   final customName = TextEditingController();
   final voiceMessageController = TextEditingController();
+  final tts = FlutterTts();
 
   String plushType = "Bear";
   String color = "Brown";
+  String voiceStyle = "Normal";
   final List<String> selectedAccessories = [];
   bool addingToCart = false;
 
@@ -37,17 +44,65 @@ class _BuildAToyPageState extends State<BuildAToyPage> {
     "Purple",
   ];
   final List<String> accessories = ["Bow", "Hat", "Sunglasses"];
+  final List<String> voiceStyles = ["Normal", "Cute", "Nervous", "Fast"];
+
+  bool get isEditingCartItem => widget.cartItemId != null;
+
+  @override
+  void initState() {
+    super.initState();
+    loadInitialCartData();
+  }
 
   @override
   void dispose() {
+    tts.stop().catchError((error) {});
     customName.dispose();
     voiceMessageController.dispose();
     super.dispose();
   }
 
+  void loadInitialCartData() {
+    final data = widget.initialData;
+
+    if (data == null) {
+      return;
+    }
+
+    customName.text = data['name']?.toString() ?? '';
+    plushType = data['type']?.toString() ?? plushType;
+    color = data['color']?.toString() ?? color;
+    voiceMessageController.text = data['voiceMessage']?.toString() ?? '';
+    voiceStyle = data['voiceStyle']?.toString() ?? voiceStyle;
+
+    final savedAccessories = data['accessories'];
+
+    if (savedAccessories is List) {
+      selectedAccessories.addAll(
+        savedAccessories
+            .map((item) => item.toString())
+            .where((item) => accessories.contains(item)),
+      );
+      return;
+    }
+
+    final legacyAccessory = data['accessory']?.toString() ?? '';
+
+    if (legacyAccessory.isNotEmpty && legacyAccessory != "None") {
+      selectedAccessories.addAll(
+        legacyAccessory
+            .split(',')
+            .map((item) => item.trim())
+            .where((item) => accessories.contains(item)),
+      );
+    }
+  }
+
   double get accessoryPrice => selectedAccessories.length * 3;
 
   double get voicePrice => voiceMessageController.text.trim().isEmpty ? 0 : 3;
+
+  bool get hasVoiceMessage => voiceMessageController.text.trim().isNotEmpty;
 
   double get totalPrice => basePrice + accessoryPrice + voicePrice;
 
@@ -57,11 +112,16 @@ class _BuildAToyPageState extends State<BuildAToyPage> {
   }
 
   String get imagePath {
-    if (plushType == "Bear") {
+    if (plushType == "Bear" ||
+        plushType == "Bunny" ||
+        plushType == "Cat" ||
+        plushType == "Dog" ||
+        plushType == "Monkey") {
+      final toy = plushType.toLowerCase();
       final suffix = color.toLowerCase();
       return suffix == "brown"
-          ? 'assets/images/bear.png'
-          : 'assets/images/bear_$suffix.png';
+          ? 'assets/images/$toy.png'
+          : 'assets/images/${toy}_$suffix.png';
     }
 
     return 'assets/images/${plushType.toLowerCase()}.png';
@@ -76,12 +136,52 @@ class _BuildAToyPageState extends State<BuildAToyPage> {
   }
 
   List<String> get accessoryOverlayPaths {
-    if (plushType != "Bear") {
+    if (plushType != "Bear" &&
+        plushType != "Bunny" &&
+        plushType != "Cat" &&
+        plushType != "Dog" &&
+        plushType != "Monkey") {
       return [];
     }
 
     return selectedAccessories
         .map((accessory) {
+          if (plushType == "Monkey") {
+            return switch (accessory) {
+              "Bow" => 'assets/images/monkey_bow.png',
+              "Hat" => 'assets/images/monkey_hat.png',
+              "Sunglasses" => 'assets/images/monkey_glasses.png',
+              _ => null,
+            };
+          }
+
+          if (plushType == "Dog") {
+            return switch (accessory) {
+              "Bow" => 'assets/images/dog_bow.png',
+              "Hat" => 'assets/images/dog_hat.png',
+              "Sunglasses" => 'assets/images/dog_glasses.png',
+              _ => null,
+            };
+          }
+
+          if (plushType == "Cat") {
+            return switch (accessory) {
+              "Bow" => 'assets/images/cat_bow.png',
+              "Hat" => 'assets/images/cat_hat.png',
+              "Sunglasses" => 'assets/images/cat_glasses.png',
+              _ => null,
+            };
+          }
+
+          if (plushType == "Bunny") {
+            return switch (accessory) {
+              "Bow" => 'assets/images/bunny_bow.png',
+              "Hat" => 'assets/images/bunny_hat.png',
+              "Sunglasses" => 'assets/images/bunny_glasses.png',
+              _ => null,
+            };
+          }
+
           return switch (accessory) {
             "Bow" => 'assets/images/bow_bear.png',
             "Hat" => 'assets/images/bear_hat.png',
@@ -118,7 +218,64 @@ class _BuildAToyPageState extends State<BuildAToyPage> {
     };
   }
 
-  Future<void> addToCart() async {
+  Future<void> applyVoiceStyle() async {
+    switch (voiceStyle) {
+      case "Cute":
+        await tts.setPitch(2.0);
+        await tts.setSpeechRate(0.40);
+        break;
+      case "Nervous":
+        await tts.setPitch(1.25);
+        await tts.setSpeechRate(0.34);
+        break;
+      case "Fast":
+        await tts.setPitch(1.65);
+        await tts.setSpeechRate(0.95);
+        break;
+      default:
+        await tts.setPitch(1.0);
+        await tts.setSpeechRate(0.5);
+    }
+
+    await tts.setVolume(1.0);
+  }
+
+  Future<void> previewVoiceMessage() async {
+    final message = voiceMessageController.text.trim();
+
+    if (message.isEmpty) {
+      NotificationManager.info(context, "Type a voice message first");
+      return;
+    }
+
+    try {
+      await tts.stop();
+      await applyVoiceStyle();
+      await tts.speak(styledVoiceMessage(message));
+    } on MissingPluginException {
+      if (!mounted) return;
+      NotificationManager.info(
+        context,
+        "Restart the app to enable voice preview",
+      );
+    } catch (error) {
+      if (!mounted) return;
+      NotificationManager.error(context, "Could not play voice preview");
+    }
+  }
+
+  String styledVoiceMessage(String message) {
+    if (voiceStyle != "Nervous") {
+      return message;
+    }
+
+    return message
+        .split(RegExp(r'\s+'))
+        .where((word) => word.trim().isNotEmpty)
+        .join("... ");
+  }
+
+  Future<void> saveCustomToy() async {
     final user = FirebaseAuth.instance.currentUser;
 
     if (user == null) {
@@ -135,27 +292,37 @@ class _BuildAToyPageState extends State<BuildAToyPage> {
         .doc(user.uid)
         .collection('cart_items');
 
-    await cart.add({
+    final customToyData = {
       'productId': 'custom-toy',
       'isCustomToy': true,
       'name': displayName,
       'price': totalPrice,
       'image': imagePath,
       'accessoryOverlays': accessoryOverlayPaths,
-      'quantity': 1,
       'type': plushType,
       'color': color,
       'accessory': accessoryLabel,
       'accessories': selectedAccessories,
       'voiceMessage': voiceMessageController.text.trim(),
+      'voiceStyle': voiceStyle,
       'customDetails': {
         'basePrice': basePrice,
         'accessoryPrice': accessoryPrice,
         'voicePrice': voicePrice,
         'createdFrom': 'Build-A-Toy',
       },
-      'createdAt': FieldValue.serverTimestamp(),
-    });
+      'updatedAt': FieldValue.serverTimestamp(),
+    };
+
+    if (isEditingCartItem) {
+      await cart.doc(widget.cartItemId).update(customToyData);
+    } else {
+      await cart.add({
+        ...customToyData,
+        'quantity': 1,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+    }
 
     if (!mounted) {
       return;
@@ -165,7 +332,16 @@ class _BuildAToyPageState extends State<BuildAToyPage> {
       addingToCart = false;
     });
 
-    NotificationManager.success(context, "$displayName added to cart");
+    NotificationManager.success(
+      context,
+      isEditingCartItem
+          ? "$displayName updated in cart"
+          : "$displayName added to cart",
+    );
+
+    if (isEditingCartItem) {
+      Navigator.pop(context);
+    }
   }
 
   Widget sectionTitle(String title, String subtitle) {
@@ -286,8 +462,8 @@ class _BuildAToyPageState extends State<BuildAToyPage> {
               detailChip(Icons.toys, plushType),
               detailChip(Icons.palette_outlined, color),
               detailChip(Icons.style_outlined, accessoryLabel),
-              if (voiceMessageController.text.trim().isNotEmpty)
-                detailChip(Icons.record_voice_over, "Voice"),
+              if (hasVoiceMessage)
+                detailChip(Icons.record_voice_over, "$voiceStyle Voice"),
             ],
           ),
         ],
@@ -455,6 +631,42 @@ class _BuildAToyPageState extends State<BuildAToyPage> {
     );
   }
 
+  Widget voiceStyleSelector() {
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: voiceStyles.map((option) {
+        final selected = voiceStyle == option;
+
+        return ChoiceChip(
+          avatar: Icon(
+            voiceStyleIcon(option),
+            size: 17,
+            color: selected ? brandColor : Colors.grey.shade700,
+          ),
+          label: Text(option),
+          selected: selected,
+          selectedColor: const Color(0xFFF1E5F6),
+          side: BorderSide(color: selected ? brandColor : Colors.grey.shade300),
+          onSelected: (_) {
+            setState(() {
+              voiceStyle = option;
+            });
+          },
+        );
+      }).toList(),
+    );
+  }
+
+  IconData voiceStyleIcon(String value) {
+    return switch (value) {
+      "Cute" => Icons.favorite_outline,
+      "Nervous" => Icons.sentiment_dissatisfied_outlined,
+      "Fast" => Icons.speed,
+      _ => Icons.record_voice_over,
+    };
+  }
+
   Widget pricePanel() {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -577,6 +789,24 @@ class _BuildAToyPageState extends State<BuildAToyPage> {
                   hint: "Optional message for your plush",
                   maxLines: 2,
                 ),
+                if (hasVoiceMessage) ...[
+                  const SizedBox(height: 12),
+                  voiceStyleSelector(),
+                  const SizedBox(height: 10),
+                  OutlinedButton.icon(
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: brandColor,
+                      minimumSize: const Size(double.infinity, 48),
+                      side: const BorderSide(color: brandColor),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    onPressed: previewVoiceMessage,
+                    icon: const Icon(Icons.volume_up_outlined),
+                    label: Text("Preview $voiceStyle Voice"),
+                  ),
+                ],
                 const SizedBox(height: 18),
                 pricePanel(),
                 const SizedBox(height: 18),
@@ -625,7 +855,7 @@ class _BuildAToyPageState extends State<BuildAToyPage> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    onPressed: addingToCart ? null : addToCart,
+                    onPressed: addingToCart ? null : saveCustomToy,
                     icon: addingToCart
                         ? const SizedBox(
                             width: 18,
@@ -633,7 +863,11 @@ class _BuildAToyPageState extends State<BuildAToyPage> {
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
                         : const Icon(Icons.add_shopping_cart),
-                    label: Text(addingToCart ? "Adding" : "Add"),
+                    label: Text(
+                      addingToCart
+                          ? (isEditingCartItem ? "Saving" : "Adding")
+                          : (isEditingCartItem ? "Save" : "Add"),
+                    ),
                   ),
                 ],
               ),
