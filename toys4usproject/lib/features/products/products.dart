@@ -35,7 +35,7 @@ class _ProductsPageState extends State<ProductsPage> {
   @override
   void initState() {
     super.initState();
-    seedDefaultProducts();
+    seedDefaultProducts(); //comment this out after adding all the products please, this thing keeps updating the page each time it opens ressetting the stuff in the firebase to what's in teh json
     jokeFuture = JokeService().fetchJoke();
   }
 
