@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/local_notification_service.dart';
@@ -11,6 +12,7 @@ import 'widgets/steps/delivery_info_step.dart';
 import 'widgets/steps/order_confirmed_step.dart';
 import 'widgets/steps/order_total_step.dart';
 import 'widgets/steps/payment_step.dart';
+import '../../services/stripe_service.dart';
 
 const Color brandColor = Color(0xFF7B1FA2);
 const Color softBackground = Color(0xFFF8F5FA);
@@ -55,6 +57,31 @@ class _CheckoutPageState extends State<CheckoutPage> {
         .collection('users')
         .doc(user!.uid)
         .collection('orders');
+  }
+
+  Future<void> _saveOrder(
+      List<QueryDocumentSnapshot<Map<String, dynamic>>> items,
+      double capturedTotal) async {
+    await ordersRef.add({
+      'items': items.map((doc) => doc.data()).toList(),
+      'shippingAddress': deliveryDetails(),
+      'subtotal': capturedTotal,
+      'shipping': 30,
+      'total': capturedTotal + 30,
+      'status': 'Processing',
+      'paymentMethod': 'Stripe',
+      'createdAt': FieldValue.serverTimestamp(),
+    });
+
+    for (final doc in items) {
+      await cartRef.doc(doc.id).delete();
+    }
+
+    await LocalNotificationService.showOrderConfirmedNotification(
+        total: capturedTotal + 30);
+
+    if (!mounted) return;
+    setState(() => step = 4);
   }
 
   @override
@@ -172,6 +199,9 @@ class _CheckoutPageState extends State<CheckoutPage> {
         ),
       ),
     );
+
+
+
   }
 
   Future<void> placeOrder(
@@ -181,43 +211,21 @@ class _CheckoutPageState extends State<CheckoutPage> {
       return;
     }
 
-    final orderItems = items.map((doc) {
-      final data = doc.data();
-      return {
-        'productId': data['productId'],
-        'isCustomToy': data['isCustomToy'],
-        'name': data['name'],
-        'price': data['price'],
-        'image': data['image'],
-        'quantity': data['quantity'],
-        'type': data['type'],
-        'color': data['color'],
-        'accessory': data['accessory'],
-        'voiceMessage': data['voiceMessage'],
-        'customDetails': data['customDetails'],
-      };
-    }).toList();
+    try {
+      final capturedTotal = total;
 
-    await ordersRef.add({
-      'items': orderItems,
-      'shippingAddress': deliveryDetails(),
-      'subtotal': total,
-      'shipping': 30,
-      'total': total + 30,
-      'status': 'Processing',
-      'paymentMethod': paymentMethod,
-      'createdAt': FieldValue.serverTimestamp(),
-    });
+      if (!kIsWeb) {
+        final success = await StripeService.processPayment(
+          amount: capturedTotal + 30,
+          customerName: '${firstName.text.trim()} ${lastName.text.trim()}',
+        );
+        if (!success) return;
+      }
 
-    for (final doc in items) {
-      await cartRef.doc(doc.id).delete();
+      await _saveOrder(items, capturedTotal);
+    } catch (e) {
+      NotificationManager.error(context, "Payment failed. Please try again.");
     }
-
-    await LocalNotificationService.showOrderConfirmedNotification(
-        total: total + 30);
-
-    if (!mounted) return;
-    setState(() => step = 4);
   }
 
   @override
@@ -291,12 +299,20 @@ class _CheckoutPageState extends State<CheckoutPage> {
             case 3:
               return pageShell(
                 title: "Payment",
-                subtitle: "Choose a demo payment method to complete checkout.",
+                subtitle: "Complete your purchase securely.",
                 child: PaymentStep(
                   total: total,
-                  selectedMethod: paymentMethod,
-                  onMethodChanged: (val) => setState(() => paymentMethod = val),
                   onPay: () => placeOrder(items),
+                  onGooglePay: () async {
+                    final capturedTotal = total;
+                    final success = await StripeService.processGooglePay(amount: capturedTotal + 30);
+                    if (success && mounted) await _saveOrder(items, capturedTotal);
+                  },
+                  onApplePay: () async {
+                    final capturedTotal = total;
+                    final success = await StripeService.processApplePay(amount: capturedTotal + 30);
+                    if (success && mounted) await _saveOrder(items, capturedTotal);
+                  },
                 ),
               );
             case 4:

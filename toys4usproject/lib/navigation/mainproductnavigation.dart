@@ -120,10 +120,11 @@ class _MainProductNavigationState extends State<MainProductNavigation> {
       ),
 
       drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
+        child: Column(
           children: [
+            // Header (fixed)
             Container(
+              width: double.infinity,
               padding: const EdgeInsets.fromLTRB(18, 52, 18, 18),
               decoration: const BoxDecoration(color: brandColor),
               child: Column(
@@ -153,10 +154,7 @@ class _MainProductNavigationState extends State<MainProductNavigation> {
                   if (isAdmin) ...[
                     const SizedBox(height: 10),
                     Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 4,
-                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(
                         color: const Color(0x29FFFFFF),
                         borderRadius: BorderRadius.circular(20),
@@ -174,59 +172,59 @@ class _MainProductNavigationState extends State<MainProductNavigation> {
                 ],
               ),
             ),
-            const SizedBox(height: 10),
-            drawerItem(index: 0, icon: Icons.storefront, title: "Products"),
-            drawerItem(index: 1, icon: Icons.toys, title: "Build-A-Toy"),
-            drawerItem(index: 2, icon: Icons.shopping_cart, title: "Cart"),
-            drawerItem(
-              index: 3,
-              icon: Icons.receipt_long,
-              title: "Order History",
+
+            // Scrollable nav items (middle)
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.only(top: 10),
+                children: [
+                  drawerItem(index: 0, icon: Icons.storefront, title: "Products"),
+                  drawerItem(index: 1, icon: Icons.toys, title: "Build-A-Toy"),
+                  drawerItem(index: 2, icon: Icons.shopping_cart, title: "Cart"),
+                  drawerItem(index: 3, icon: Icons.receipt_long, title: "Order History"),
+                  drawerItem(index: 4, icon: Icons.location_on, title: "Store Location"),
+                  drawerItem(index: 5, icon: Icons.info, title: "About Us"),
+                  if (isAdmin) ...[
+                    const Padding(
+                      padding: EdgeInsets.fromLTRB(20, 14, 20, 6),
+                      child: Text(
+                        "Admin Tools",
+                        style: TextStyle(
+                          color: Colors.grey,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                    drawerItem(index: 7, icon: Icons.admin_panel_settings, title: "Manage Products"),
+                    drawerItem(index: 8, icon: Icons.assignment_outlined, title: "Manage Orders"),
+                  ],
+                ],
+              ),
             ),
 
-            drawerItem(
-              index: 4,
-              icon: Icons.location_on,
-              title: "Store Location",
-            ),
-            drawerItem(index: 5, icon: Icons.info, title: "About Us"),
-            drawerItem(index: 6, icon: Icons.person, title: "Profile"),
-
-            if (isAdmin) ...[
-              const Padding(
-                padding: EdgeInsets.fromLTRB(20, 14, 20, 6),
-                child: Text(
-                  "Admin Tools",
-                  style: TextStyle(
-                    color: Colors.grey,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 12,
+            // Profile + Logout pinned to bottom
+            const Divider(height: 1),
+            SafeArea(
+              top: false,
+              child: Column(
+                children: [
+                  const SizedBox(height: 6),
+                  drawerItem(index: 6, icon: Icons.person, title: "Profile"),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    child: ListTile(
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
+                      leading: const Icon(Icons.logout),
+                      title: const Text("Logout"),
+                      iconColor: Colors.red,
+                      textColor: Colors.red,
+                      onTap: () => logout(context),
+                    ),
                   ),
-                ),
-              ),
-              drawerItem(
-                index: 7,
-                icon: Icons.admin_panel_settings,
-                title: "Manage Products",
-              ),
-              drawerItem(
-                index: 8,
-                icon: Icons.assignment_outlined,
-                title: "Manage Orders",
-              ),
-            ],
-            const Divider(height: 28),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10),
-              child: ListTile(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                leading: const Icon(Icons.logout),
-                title: const Text("Logout"),
-                iconColor: Colors.red,
-                textColor: Colors.red,
-                onTap: () => logout(context),
+                  const SizedBox(height: 6),
+                ],
               ),
             ),
           ],
