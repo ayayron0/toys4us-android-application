@@ -1,6 +1,9 @@
+import 'dart:convert';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../services/joke_service.dart';
 import 'product.dart';
@@ -32,74 +35,24 @@ class _ProductsPageState extends State<ProductsPage> {
   @override
   void initState() {
     super.initState();
+    seedDefaultProducts();
     jokeFuture = JokeService().fetchJoke();
   }
 
-  List<Product> get defaultProducts {
-    return [
-      Product(
-        id: 'tomodachi-life',
-        name: "Tomodachi Life",
-        subtitle: "Living the Dream",
-        description: "Who doesn't want this new switch game...",
-        price: 21.99,
-        oldPrice: 68.90,
-        image: "assets/images/tomodachi.jpg",
-        rating: 4.5,
-        reviews: 6890,
-        types: ["game"],
-      ),
-      Product(
-        id: 'owl-plush',
-        name: "Owl Plush",
-        subtitle: "",
-        description: "Reminds us all of who we truly love...OWLS",
-        price: 29.99,
-        oldPrice: 0,
-        image: "assets/images/owl.jpg",
-        rating: 4.8,
-        reviews: 152344,
-        types: ["toy"],
-      ),
-      Product(
-        id: 'jigsaw-puzzle',
-        name: "Jigsaw Puzzle",
-        subtitle: "",
-        description: "For those with the brains for it...",
-        price: 9.99,
-        oldPrice: 0,
-        image: "assets/images/puzzle.jpg",
-        rating: 4.2,
-        reviews: 320,
-        types: ["game"],
-      ),
-      Product(
-        id: 'mega-evo-etb',
-        name: "Mega Evo ETB",
-        subtitle: "",
-        description: "Become poor for your interests...",
-        price: 999.99,
-        oldPrice: 0,
-        image: "assets/images/box.jpg",
-        rating: 5.0,
-        reviews: 12,
-        types: ["cards"],
-      ),
-    ];
+  Future<List<Product>> _loadDefaultProducts() async {
+    final jsonString = await rootBundle.loadString('assets/data/products.json');
+    final List<dynamic> jsonList = json.decode(jsonString);
+    return jsonList.map((e) => Product.fromMap(e as Map<String, dynamic>)).toList();
   }
 
   Future<void> seedDefaultProducts() async {
-    if (seedingProducts) {
-      return;
-    }
+    if (seedingProducts) return;
+    setState(() => seedingProducts = true);
 
-    setState(() {
-      seedingProducts = true;
-    });
-
+    final products = await _loadDefaultProducts();
     final batch = FirebaseFirestore.instance.batch();
 
-    for (final product in defaultProducts) {
+    for (final product in products) {
       batch.set(productsRef.doc(product.id), {
         ...product.toMap(),
         'createdAt': FieldValue.serverTimestamp(),
@@ -107,14 +60,9 @@ class _ProductsPageState extends State<ProductsPage> {
     }
 
     await batch.commit();
-
-    if (!mounted) {
-      return;
-    }
-
-    setState(() {
-      seedingProducts = false;
-    });
+    if (!mounted) return;
+    setState(() => seedingProducts = false);
+    print("Seeded stuff");
   }
 
   List<Product> filterProducts(List<Product> products) {
@@ -428,6 +376,44 @@ class _ProductsPageState extends State<ProductsPage> {
       ),
     );
   }
+  
+  Widget buildImage(String imagePath) {
+    if (imagePath.startsWith('http')) {
+      return Image.network(
+        imagePath,
+        height: 200,
+        width: double.infinity,
+        fit: BoxFit.contain,
+        errorBuilder: (context, error, stackTrace) {
+          return Container(
+            color: Colors.grey.shade200,
+            child: const Icon(
+              Icons.image_not_supported_outlined,
+              size: 42,
+              color: Colors.grey,
+            ),
+          );
+        },
+      );
+    } else {
+      return Image.asset(
+        imagePath,
+        height: 200,
+        width: double.infinity,
+        fit: BoxFit.contain,
+        errorBuilder: (context, error, stackTrace) {
+          return Container(
+            color: Colors.grey.shade200,
+            child: const Icon(
+              Icons.image_not_supported_outlined,
+              size: 42,
+              color: Colors.grey,
+            ),
+          );
+        },
+      );
+    }
+  }
 
   Widget _buildProductCard(BuildContext context, Product product) {
     return InkWell(
@@ -449,21 +435,8 @@ class _ProductsPageState extends State<ProductsPage> {
           children: [
             AspectRatio(
               aspectRatio: 1.2,
-              child: Image.asset(
-                product.image,
-                width: double.infinity,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    color: Colors.grey.shade200,
-                    child: const Icon(
-                      Icons.image_not_supported_outlined,
-                      size: 42,
-                      color: Colors.grey,
-                    ),
-                  );
-                },
-              ),
+              child: 
+                buildImage(product.image)
             ),
             Expanded(
               child: Padding(

@@ -1,0 +1,62 @@
+[
+  {
+    "id": "tomodachi-life",
+    "name": "Tomodachi Life",
+    "subtitle": "Living the Dream",
+    "description": "Who doesn't want this new switch game...",
+    "price": 21.99,
+    "oldPrice": 68.90,
+    "image": "assets/images/tomodachi.jpg",
+    "rating": 4.5,
+    "reviews": 6890,
+    "types": ["game"]
+  },
+  {
+    "id": "glasses-1",
+    "name": "glasses",
+    "subtitle": "",
+    "description": "Glasses, for spies",
+    "price": 5.99,
+    "oldPrice": 10.99,
+    "image": "assets/images/glasses.png",
+    "rating": 5,
+    "reviews": 1023,
+    "types": ["toy"]
+  },
+  {
+    "id": "owl-plush",
+    "name": "Owl Plush",
+    "subtitle": "",
+    "description": "Reminds us all of who we truly love...OWLS",
+    "price": 29.99,
+    "oldPrice": 0,
+    "image": "assets/images/owl.jpg",
+    "rating": 4.8,
+    "reviews": 152344,
+    "types": ["toy"]
+  },
+  {
+    "id": "jigsaw-puzzle",
+    "name": "Jigsaw Puzzle",
+    "subtitle": "",
+    "description": "For those with the brains for it...",
+    "price": 9.99,
+    "oldPrice": 0,
+    "image": "assets/images/puzzle.jpg",
+    "rating": 4.2,
+    "reviews": 320,
+    "types": ["game"]
+  },
+  {
+    "id": "mega-evo-etb",
+    "name": "Mega Evo ETB",
+    "subtitle": "",
+    "description": "Become poor for your interests...",
+    "price": 999.99,
+    "oldPrice": 0,
+    "image": "assets/images/box.jpg",
+    "rating": 5.0,
+    "reviews": 12,
+    "types": ["cards"]
+  }
+]

@@ -25,9 +25,8 @@ class Product {
     required this.types,
   });
 
-  factory Product.fromFirestore(
-    QueryDocumentSnapshot<Map<String, dynamic>> doc,
-  ) {
+  factory Product.fromFirestore(QueryDocumentSnapshot<Map<String, dynamic>> doc,)
+  {
     final data = doc.data();
 
     return Product(
@@ -43,6 +42,22 @@ class Product {
       types: List<String>.from(data['types'] ?? []),
     );
   }
+
+  factory Product.fromMap(Map<String, dynamic> map) {
+    return Product(
+      id: map['id'] ?? '',
+      name: map['name'] ?? '',
+      subtitle: map['subtitle'] ?? '',
+      description: map['description'] ?? '',
+      price: (map['price'] as num? ?? 0).toDouble(),
+      oldPrice: (map['oldPrice'] as num? ?? 0).toDouble(),
+      image: map['image'] ?? '',
+      rating: (map['rating'] as num? ?? 0).toDouble(),
+      reviews: (map['reviews'] as num? ?? 0).toInt(),
+      types: List<String>.from(map['types'] ?? []),
+    );
+  }
+
 
   Map<String, dynamic> toMap() {
     return {
