@@ -35,7 +35,7 @@ class ProductImage extends StatelessWidget {
         height: height,
         width: width,
         fit: fit,
-        errorBuilder: (_, __, ___) => fallback,
+        errorBuilder: (context, error, stackTrace) => fallback,
       );
     }
 
@@ -44,7 +44,7 @@ class ProductImage extends StatelessWidget {
       height: height,
       width: width,
       fit: fit,
-      errorBuilder: (_, __, ___) => fallback,
+      errorBuilder: (context, error, stackTrace) => fallback,
     );
   }
 }

@@ -7,11 +7,7 @@ class CartItemCard extends StatelessWidget {
   final QueryDocumentSnapshot<Map<String, dynamic>> doc;
   final CollectionReference<Map<String, dynamic>> cartRef;
 
-  const CartItemCard({
-    super.key,
-    required this.doc,
-    required this.cartRef,
-  });
+  const CartItemCard({super.key, required this.doc, required this.cartRef});
 
   @override
   Widget build(BuildContext context) {
@@ -39,18 +35,19 @@ class CartItemCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(8),
                   child: image.isNotEmpty
                       ? Image.asset(
-                    image,
-                    width: 68,
-                    height: 68,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => _imageFallback(),
-                  )
+                          image,
+                          width: 68,
+                          height: 68,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) =>
+                              _imageFallback(),
+                        )
                       : Container(
-                    width: 68,
-                    height: 68,
-                    color: Colors.grey.shade200,
-                    child: const Icon(Icons.shopping_bag_outlined),
-                  ),
+                          width: 68,
+                          height: 68,
+                          color: Colors.grey.shade200,
+                          child: const Icon(Icons.shopping_bag_outlined),
+                        ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -86,20 +83,20 @@ class CartItemCard extends StatelessWidget {
                           _quantityButton(
                             icon: Icons.remove,
                             onPressed: quantity > 1
-                                ? () => cartRef.doc(doc.id).update(
-                                {'quantity': quantity - 1})
+                                ? () => cartRef.doc(doc.id).update({
+                                    'quantity': quantity - 1,
+                                  })
                                 : null,
                           ),
                           Padding(
-                            padding:
-                            const EdgeInsets.symmetric(horizontal: 10),
+                            padding: const EdgeInsets.symmetric(horizontal: 10),
                             child: Text("$quantity"),
                           ),
                           _quantityButton(
                             icon: Icons.add,
-                            onPressed: () => cartRef
-                                .doc(doc.id)
-                                .update({'quantity': quantity + 1}),
+                            onPressed: () => cartRef.doc(doc.id).update({
+                              'quantity': quantity + 1,
+                            }),
                           ),
                         ],
                       ),
@@ -138,12 +135,14 @@ class CartItemCard extends StatelessWidget {
         spacing: 6,
         runSpacing: 6,
         children: details
-            .map((detail) => Chip(
-          label: Text(detail),
-          visualDensity: VisualDensity.compact,
-          backgroundColor: const Color(0xFFF1E5F6),
-          side: BorderSide.none,
-        ))
+            .map(
+              (detail) => Chip(
+                label: Text(detail),
+                visualDensity: VisualDensity.compact,
+                backgroundColor: const Color(0xFFF1E5F6),
+                side: BorderSide.none,
+              ),
+            )
             .toList(),
       ),
     );
@@ -168,8 +167,7 @@ class CartItemCard extends StatelessWidget {
       child: OutlinedButton(
         style: OutlinedButton.styleFrom(
           padding: EdgeInsets.zero,
-          shape:
-          RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
         onPressed: onPressed,
         child: Icon(icon, size: 16),

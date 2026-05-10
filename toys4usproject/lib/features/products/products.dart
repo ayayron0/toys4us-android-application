@@ -36,34 +36,45 @@ class _ProductsPageState extends State<ProductsPage> {
   @override
   void initState() {
     super.initState();
-    seedDefaultProducts(); //comment this out after adding all the products please, this thing keeps updating the page each time it opens ressetting the stuff in the firebase to what's in teh json
+    seedMissingDefaultProducts();
     jokeFuture = JokeService().fetchJoke();
   }
 
   Future<List<Product>> _loadDefaultProducts() async {
     final jsonString = await rootBundle.loadString('assets/data/products.json');
     final List<dynamic> jsonList = json.decode(jsonString);
-    return jsonList.map((e) => Product.fromMap(e as Map<String, dynamic>)).toList();
+    return jsonList
+        .map((e) => Product.fromMap(e as Map<String, dynamic>))
+        .toList();
   }
 
-  Future<void> seedDefaultProducts() async {
+  Future<void> seedMissingDefaultProducts() async {
     if (seedingProducts) return;
     setState(() => seedingProducts = true);
 
     final products = await _loadDefaultProducts();
     final batch = FirebaseFirestore.instance.batch();
+    var missingProducts = 0;
 
     for (final product in products) {
-      batch.set(productsRef.doc(product.id), {
-        ...product.toMap(),
-        'createdAt': FieldValue.serverTimestamp(),
-      });
+      final productDoc = productsRef.doc(product.id);
+      final snapshot = await productDoc.get();
+
+      if (!snapshot.exists) {
+        batch.set(productDoc, {
+          ...product.toMap(),
+          'createdAt': FieldValue.serverTimestamp(),
+        });
+        missingProducts++;
+      }
     }
 
-    await batch.commit();
+    if (missingProducts > 0) {
+      await batch.commit();
+    }
+
     if (!mounted) return;
     setState(() => seedingProducts = false);
-    print("Seeded stuff");
   }
 
   List<Product> filterProducts(List<Product> products) {
@@ -100,7 +111,7 @@ class _ProductsPageState extends State<ProductsPage> {
             checkedAutoSeed = true;
             WidgetsBinding.instance.addPostFrameCallback((_) {
               if (mounted) {
-                seedDefaultProducts();
+                seedMissingDefaultProducts();
               }
             });
           }
@@ -235,19 +246,24 @@ class _ProductsPageState extends State<ProductsPage> {
                                 final isWeb = kIsWeb;
 
                                 return SliverGrid(
-                                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                                    crossAxisCount: isWeb? (constraints.crossAxisExtent / 200).floor() : 2,
-                                    crossAxisSpacing: 12,
-                                    mainAxisSpacing: 12,
-                                    childAspectRatio: isWeb ? 0.65 : 0.55,
-                                  ),
-                                  delegate: SliverChildBuilderDelegate(
-                                        (context, index) {
-                                      final product = filteredProducts[index];
-                                      return _buildProductCard(context, product);
-                                    },
-                                    childCount: filteredProducts.length,
-                                  ),
+                                  gridDelegate:
+                                      SliverGridDelegateWithFixedCrossAxisCount(
+                                        crossAxisCount: isWeb
+                                            ? (constraints.crossAxisExtent /
+                                                      200)
+                                                  .floor()
+                                            : 2,
+                                        crossAxisSpacing: 12,
+                                        mainAxisSpacing: 12,
+                                        childAspectRatio: isWeb ? 0.65 : 0.55,
+                                      ),
+                                  delegate: SliverChildBuilderDelegate((
+                                    context,
+                                    index,
+                                  ) {
+                                    final product = filteredProducts[index];
+                                    return _buildProductCard(context, product);
+                                  }, childCount: filteredProducts.length),
                                 );
                               },
                             ),
@@ -378,7 +394,6 @@ class _ProductsPageState extends State<ProductsPage> {
     );
   }
 
-
   Widget _buildProductCard(BuildContext context, Product product) {
     return InkWell(
       borderRadius: BorderRadius.circular(8),
@@ -399,8 +414,7 @@ class _ProductsPageState extends State<ProductsPage> {
           children: [
             AspectRatio(
               aspectRatio: 1.2,
-              child:
-              ProductImage(imagePath: product.image)
+              child: ProductImage(imagePath: product.image),
             ),
             Expanded(
               child: Padding(

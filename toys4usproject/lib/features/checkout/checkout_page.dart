@@ -60,8 +60,9 @@ class _CheckoutPageState extends State<CheckoutPage> {
   }
 
   Future<void> _saveOrder(
-      List<QueryDocumentSnapshot<Map<String, dynamic>>> items,
-      double capturedTotal) async {
+    List<QueryDocumentSnapshot<Map<String, dynamic>>> items,
+    double capturedTotal,
+  ) async {
     await ordersRef.add({
       'items': items.map((doc) => doc.data()).toList(),
       'shippingAddress': deliveryDetails(),
@@ -78,7 +79,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
     }
 
     await LocalNotificationService.showOrderConfirmedNotification(
-        total: capturedTotal + 30);
+      total: capturedTotal + 30,
+    );
 
     if (!mounted) return;
     setState(() => step = 4);
@@ -110,7 +112,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
 
     firstName.text = data['firstName'] ?? '';
     lastName.text = data['lastName'] ?? '';
-    email.text = data['email'] ?? FirebaseAuth.instance.currentUser?.email ?? '';
+    email.text =
+        data['email'] ?? FirebaseAuth.instance.currentUser?.email ?? '';
     phone.text = data['phone'] ?? '';
     address.text = data['address'] ?? '';
     city.text = data['city'] ?? '';
@@ -118,11 +121,14 @@ class _CheckoutPageState extends State<CheckoutPage> {
     setState(() => loadedSavedProfile = true);
   }
 
-  double calculateTotal(List<QueryDocumentSnapshot<Map<String, dynamic>>> docs) {
+  double calculateTotal(
+    List<QueryDocumentSnapshot<Map<String, dynamic>>> docs,
+  ) {
     double sum = 0;
     for (final item in docs) {
       final data = item.data();
-      sum += (data['price'] as num? ?? 0).toDouble() *
+      sum +=
+          (data['price'] as num? ?? 0).toDouble() *
           (data['quantity'] as num? ?? 1).toInt();
     }
     return sum;
@@ -153,8 +159,13 @@ class _CheckoutPageState extends State<CheckoutPage> {
 
   bool validateDeliveryInfo() {
     final fields = [
-      firstName.text, lastName.text, email.text,
-      phone.text, address.text, city.text, country.text,
+      firstName.text,
+      lastName.text,
+      email.text,
+      phone.text,
+      address.text,
+      city.text,
+      country.text,
     ];
     if (fields.any((v) => v.trim().isEmpty)) {
       NotificationManager.info(context, "Please fill in every delivery field.");
@@ -185,12 +196,15 @@ class _CheckoutPageState extends State<CheckoutPage> {
                 children: [
                   StepIndicator(currentStep: step),
                   const SizedBox(height: 18),
-                  Text(title,
-                      style: const TextStyle(
-                          fontSize: 24, fontWeight: FontWeight.w800)),
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
                   const SizedBox(height: 4),
-                  Text(subtitle,
-                      style: TextStyle(color: Colors.grey.shade700)),
+                  Text(subtitle, style: TextStyle(color: Colors.grey.shade700)),
                 ],
               ),
             ),
@@ -199,13 +213,11 @@ class _CheckoutPageState extends State<CheckoutPage> {
         ),
       ),
     );
-
-
-
   }
 
   Future<void> placeOrder(
-      List<QueryDocumentSnapshot<Map<String, dynamic>>> items) async {
+    List<QueryDocumentSnapshot<Map<String, dynamic>>> items,
+  ) async {
     if (items.isEmpty) {
       NotificationManager.info(context, "Your cart is empty");
       return;
@@ -224,6 +236,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
 
       await _saveOrder(items, capturedTotal);
     } catch (e) {
+      if (!mounted) return;
       NotificationManager.error(context, "Payment failed. Please try again.");
     }
   }
@@ -237,9 +250,9 @@ class _CheckoutPageState extends State<CheckoutPage> {
         foregroundColor: Colors.white,
         leading: step > 0 && step < 4
             ? IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => setState(() => step--),
-        )
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () => setState(() => step--),
+              )
             : null,
       ),
       body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
@@ -305,13 +318,21 @@ class _CheckoutPageState extends State<CheckoutPage> {
                   onPay: () => placeOrder(items),
                   onGooglePay: () async {
                     final capturedTotal = total;
-                    final success = await StripeService.processGooglePay(amount: capturedTotal + 30);
-                    if (success && mounted) await _saveOrder(items, capturedTotal);
+                    final success = await StripeService.processGooglePay(
+                      amount: capturedTotal + 30,
+                    );
+                    if (success && mounted) {
+                      await _saveOrder(items, capturedTotal);
+                    }
                   },
                   onApplePay: () async {
                     final capturedTotal = total;
-                    final success = await StripeService.processApplePay(amount: capturedTotal + 30);
-                    if (success && mounted) await _saveOrder(items, capturedTotal);
+                    final success = await StripeService.processApplePay(
+                      amount: capturedTotal + 30,
+                    );
+                    if (success && mounted) {
+                      await _saveOrder(items, capturedTotal);
+                    }
                   },
                 ),
               );

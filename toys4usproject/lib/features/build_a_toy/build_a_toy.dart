@@ -17,7 +17,7 @@ class _BuildAToyPageState extends State<BuildAToyPage> {
 
   String plushType = "Bear";
   String color = "Brown";
-  String accessory = "None";
+  final List<String> selectedAccessories = [];
   bool addingToCart = false;
 
   static const Color brandColor = Color(0xFF7B1FA2);
@@ -36,7 +36,7 @@ class _BuildAToyPageState extends State<BuildAToyPage> {
     "Orange",
     "Purple",
   ];
-  final List<String> accessories = ["None", "Bow", "Hat", "Sunglasses"];
+  final List<String> accessories = ["Bow", "Hat", "Sunglasses"];
 
   @override
   void dispose() {
@@ -45,7 +45,7 @@ class _BuildAToyPageState extends State<BuildAToyPage> {
     super.dispose();
   }
 
-  double get accessoryPrice => accessory == "None" ? 0 : 5;
+  double get accessoryPrice => selectedAccessories.length * 3;
 
   double get voicePrice => voiceMessageController.text.trim().isEmpty ? 0 : 3;
 
@@ -65,6 +65,32 @@ class _BuildAToyPageState extends State<BuildAToyPage> {
     }
 
     return 'assets/images/${plushType.toLowerCase()}.png';
+  }
+
+  String get accessoryLabel {
+    if (selectedAccessories.isEmpty) {
+      return "None";
+    }
+
+    return selectedAccessories.join(", ");
+  }
+
+  List<String> get accessoryOverlayPaths {
+    if (plushType != "Bear") {
+      return [];
+    }
+
+    return selectedAccessories
+        .map((accessory) {
+          return switch (accessory) {
+            "Bow" => 'assets/images/bow_bear.png',
+            "Hat" => 'assets/images/bear_hat.png',
+            "Sunglasses" => 'assets/images/glasses_bear.png',
+            _ => null,
+          };
+        })
+        .whereType<String>()
+        .toList();
   }
 
   Color get selectedToyColor {
@@ -115,10 +141,12 @@ class _BuildAToyPageState extends State<BuildAToyPage> {
       'name': displayName,
       'price': totalPrice,
       'image': imagePath,
+      'accessoryOverlays': accessoryOverlayPaths,
       'quantity': 1,
       'type': plushType,
       'color': color,
-      'accessory': accessory,
+      'accessory': accessoryLabel,
+      'accessories': selectedAccessories,
       'voiceMessage': voiceMessageController.text.trim(),
       'customDetails': {
         'basePrice': basePrice,
@@ -202,24 +230,40 @@ class _BuildAToyPageState extends State<BuildAToyPage> {
                       duration: const Duration(milliseconds: 220),
                       switchInCurve: Curves.easeOut,
                       switchOutCurve: Curves.easeIn,
-                      child: Image.asset(
-                        imagePath,
-                        key: ValueKey(imagePath),
-                        width: 190,
-                        height: 190,
-                        fit: BoxFit.contain,
-                        errorBuilder: (context, error, stackTrace) {
-                          return SizedBox(
-                            key: ValueKey("fallback-$plushType"),
+                      child: Stack(
+                        key: ValueKey("$imagePath-$accessoryLabel"),
+                        alignment: Alignment.center,
+                        children: [
+                          Image.asset(
+                            imagePath,
                             width: 190,
                             height: 190,
-                            child: Icon(
-                              plushIcon,
-                              size: 96,
-                              color: Colors.white,
+                            fit: BoxFit.contain,
+                            errorBuilder: (context, error, stackTrace) {
+                              return SizedBox(
+                                key: ValueKey("fallback-$plushType"),
+                                width: 190,
+                                height: 190,
+                                child: Icon(
+                                  plushIcon,
+                                  size: 96,
+                                  color: Colors.white,
+                                ),
+                              );
+                            },
+                          ),
+                          ...accessoryOverlayPaths.map(
+                            (overlayPath) => Image.asset(
+                              overlayPath,
+                              width: 190,
+                              height: 190,
+                              fit: BoxFit.contain,
+                              errorBuilder: (context, error, stackTrace) {
+                                return const SizedBox.shrink();
+                              },
                             ),
-                          );
-                        },
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -241,7 +285,7 @@ class _BuildAToyPageState extends State<BuildAToyPage> {
             children: [
               detailChip(Icons.toys, plushType),
               detailChip(Icons.palette_outlined, color),
-              detailChip(Icons.style_outlined, accessory),
+              detailChip(Icons.style_outlined, accessoryLabel),
               if (voiceMessageController.text.trim().isNotEmpty)
                 detailChip(Icons.record_voice_over, "Voice"),
             ],
@@ -385,7 +429,7 @@ class _BuildAToyPageState extends State<BuildAToyPage> {
       spacing: 8,
       runSpacing: 8,
       children: accessories.map((option) {
-        final selected = accessory == option;
+        final selected = selectedAccessories.contains(option);
 
         return ChoiceChip(
           avatar: Icon(
@@ -393,13 +437,17 @@ class _BuildAToyPageState extends State<BuildAToyPage> {
             size: 17,
             color: selected ? brandColor : Colors.grey.shade700,
           ),
-          label: Text(option == "None" ? "No accessory" : option),
+          label: Text(option),
           selected: selected,
           selectedColor: const Color(0xFFF1E5F6),
           side: BorderSide(color: selected ? brandColor : Colors.grey.shade300),
           onSelected: (_) {
             setState(() {
-              accessory = option;
+              if (selected) {
+                selectedAccessories.remove(option);
+              } else {
+                selectedAccessories.add(option);
+              }
             });
           },
         );
@@ -512,7 +560,10 @@ class _BuildAToyPageState extends State<BuildAToyPage> {
                 sectionTitle("Choose Color", "Select the toy color theme."),
                 colorSelector(),
                 const SizedBox(height: 18),
-                sectionTitle("Add Accessory", "Optional add-ons cost \$5.00."),
+                sectionTitle(
+                  "Add Accessories",
+                  "Stack accessories together. Each add-on costs \$3.00.",
+                ),
                 accessorySelector(),
                 const SizedBox(height: 18),
                 sectionTitle(

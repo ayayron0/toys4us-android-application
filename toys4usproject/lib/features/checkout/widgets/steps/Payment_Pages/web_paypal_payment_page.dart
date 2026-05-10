@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../checkout_primary_button.dart';
 import '../../checkout_input.dart';
 
 const Color brandColor = Color(0xFF7B1FA2);
@@ -136,7 +135,8 @@ class _WebPayPalPaymentPageState extends State<WebPayPalPaymentPage> {
                 foregroundColor: Colors.white,
                 minimumSize: const Size(double.infinity, 52),
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10)),
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
               onPressed: () {
                 if (_validate()) Navigator.pop(context, true);
