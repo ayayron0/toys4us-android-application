@@ -3,7 +3,7 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
-        android:label="appdevproject"
+        android:label="Toys 4 Us"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
